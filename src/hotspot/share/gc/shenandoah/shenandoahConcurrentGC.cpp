@@ -53,6 +53,7 @@
 #include "prims/jvmtiTagMap.hpp"
 #include "runtime/vmThread.hpp"
 #include "utilities/events.hpp"
+#include "gc/shared/gcTrace.hpp"
 
 // Breakpoint support
 class ShenandoahBreakpointGCScope : public StackObj {
@@ -768,6 +769,9 @@ void ShenandoahConcurrentGC::op_final_mark() {
   if (!heap->cancelled_gc()) {
     _mark.finish_mark();
     assert(!heap->cancelled_gc(), "STW mark cannot OOM");
+
+    ShenandoahIsAliveClosure is_alive;
+    ShenandoahHeap::heap()->tracer()->report_object_count_after_gc(&is_alive, ShenandoahHeap::heap()->workers());
 
     // Notify JVMTI that the tagmap table will need cleaning.
     JvmtiTagMap::set_needs_cleaning();
