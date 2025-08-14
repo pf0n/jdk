@@ -23,6 +23,7 @@
  *
  */
 
+#include "gc/shared/objectCountEventSender.inline.hpp"
 #include "gc/shenandoah/heuristics/shenandoahHeuristics.hpp"
 #include "gc/shenandoah/mode/shenandoahMode.hpp"
 #include "gc/shenandoah/shenandoahCollectorPolicy.hpp"
@@ -34,10 +35,13 @@
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahHeap.inline.hpp"
 #include "gc/shenandoah/shenandoahMonitoringSupport.hpp"
+#include "gc/shenandoah/shenandoahObjectCountGC.hpp"
 #include "gc/shenandoah/shenandoahUtils.hpp"
 #include "logging/log.hpp"
 #include "memory/metaspaceStats.hpp"
 #include "memory/metaspaceUtils.hpp"
+#include "iostream"
+#include "gc/shared/gcTrace.inline.hpp"
 
 ShenandoahControlThread::ShenandoahControlThread() :
   ShenandoahController(),
@@ -48,6 +52,8 @@ ShenandoahControlThread::ShenandoahControlThread() :
 }
 
 void ShenandoahControlThread::run_service() {
+  jlong service_start_time = os::javaTimeMillis();
+
   ShenandoahHeap* const heap = ShenandoahHeap::heap();
   const GCMode default_mode = concurrent_normal;
   const GCCause::Cause default_cause = GCCause::_shenandoah_concurrent_gc;
@@ -63,6 +69,8 @@ void ShenandoahControlThread::run_service() {
   heap->set_cit(&cit);
 
   while (!should_terminate()) {
+    jlong elapsed_time = os::javaTimeMillis() - service_start_time;
+
     const GCCause::Cause cancelled_cause = heap->cancelled_cause();
     if (cancelled_cause == GCCause::_shenandoah_stop_vm) {
       break;
@@ -128,7 +136,7 @@ void ShenandoahControlThread::run_service() {
 
     const bool gc_requested = (mode != none);
     assert (!gc_requested || cause != GCCause::_last_gc_cause, "GC cause should be set");
-
+    
     if (gc_requested) {
       // Cannot uncommit bitmap slices during concurrent reset
       ShenandoahNoUncommitMark forbid_region_uncommit(heap);
@@ -229,6 +237,12 @@ void ShenandoahControlThread::run_service() {
 
       // Print Metaspace change following GC (if logging is enabled).
       MetaspaceUtils::print_metaspace_change(meta_sizes);
+    } else {
+      if (ObjectCountEventSender::should_send_event<EventObjectCount>() && (ShenandoahObjectCountInterval - elapsed_time) <= 0) {
+        const GCCause::Cause count_clause = GCCause::_shenandoah_object_count;
+        service_object_count_cycle(count_clause);
+        service_start_time = os::javaTimeMillis();
+      }
     }
 
     // Check if we have seen a new target for soft max heap size or if a gc was requested.
@@ -253,7 +267,6 @@ void ShenandoahControlThread::run_service() {
     }
     os::naked_short_sleep(sleep);
   }
-
   heap->set_cit(nullptr);
 }
 
@@ -361,6 +374,20 @@ void ShenandoahControlThread::service_stw_degenerated_cycle(GCCause::Cause cause
   ShenandoahDegenGC gc(point, heap->global_generation());
   gc.collect(cause);
 }
+
+void ShenandoahControlThread::service_object_count_cycle(GCCause::Cause cause) {
+  ShenandoahHeap* heap = ShenandoahHeap::heap();
+
+  ShenandoahGCSession session(cause, heap->global_generation());
+
+  // TraceCollectorStats tcs(heap->monitoring_support()->concurrent_collection_counters());
+
+  ShenandoahObjectCountGC gc(heap->global_generation());
+  gc.collect(cause);
+
+  heap->tracer()->report_object_count<ShenandoahHeap, EventObjectCount>();
+}
+
 
 void ShenandoahControlThread::request_gc(GCCause::Cause cause) {
   if (ShenandoahCollectorPolicy::should_handle_requested_gc(cause)) {

@@ -57,7 +57,7 @@ private:
 public:
   ShenandoahConcurrentGC(ShenandoahGeneration* generation, bool do_old_gc_bootstrap);
 
-  bool collect(GCCause::Cause cause) override;
+  virtual bool collect(GCCause::Cause cause) override;
   ShenandoahDegenPoint degen_point() const;
 
   void entry_concurrent_update_refs_prepare(ShenandoahHeap* heap);

@@ -530,6 +530,11 @@
          "to prevent starvation of the old collector. Setting this to "     \
          "0 will allow back to back young collections to run during old "   \
          "collections.")                                                    \
+                                                                            \
+  product(uintx, ShenandoahObjectCountInterval, 0,                          \
+        "Duration in milliseconds to run object counting GC cycles. "            \
+        "0 means disabled.")                                                \
+        range(0, max_uintx)                                                 \
   // end of GC_SHENANDOAH_FLAGS
 
 #endif // SHARE_GC_SHENANDOAH_SHENANDOAH_GLOBALS_HPP

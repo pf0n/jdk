@@ -38,16 +38,17 @@ class ObjectCountEventSenderClosure : public KlassInfoClosure {
   }
 };
 
-template <typename T>
-void GCTracer::report_object_count(T* heap) {
-  if (!ObjectCountEventSender::should_send_event<EventObjectCountAfterGC>()) {
+template <typename T, class Event>
+void GCTracer::report_object_count() {
+  if (!ObjectCountEventSender::should_send_event<Event>()) {
     return;
   }
   
+  T* heap = T::heap();
   KlassInfoTable* cit = heap->get_cit();
 
   if (!cit->allocation_failed()) {
-    ObjectCountEventSenderClosure<EventObjectCountAfterGC> event_sender(cit->size_of_instances_in_words(), Ticks::now(), cit);
+    ObjectCountEventSenderClosure<Event> event_sender(cit->size_of_instances_in_words(), Ticks::now(), cit);
     cit->iterate(&event_sender);
   }
 }
