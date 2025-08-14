@@ -23,6 +23,7 @@
  *
  */
 
+#include "gc/shared/gcTrace.inline.hpp"
 #include "gc/shared/objectCountEventSender.inline.hpp"
 #include "gc/shenandoah/heuristics/shenandoahHeuristics.hpp"
 #include "gc/shenandoah/mode/shenandoahMode.hpp"
@@ -40,8 +41,6 @@
 #include "logging/log.hpp"
 #include "memory/metaspaceStats.hpp"
 #include "memory/metaspaceUtils.hpp"
-#include "iostream"
-#include "gc/shared/gcTrace.inline.hpp"
 
 ShenandoahControlThread::ShenandoahControlThread() :
   ShenandoahController(),
@@ -239,6 +238,7 @@ void ShenandoahControlThread::run_service() {
       MetaspaceUtils::print_metaspace_change(meta_sizes);
     } else {
       if (ObjectCountEventSender::should_send_event<EventObjectCount>() && (ShenandoahObjectCountInterval - elapsed_time) <= 0) {
+        GCIdMark gc_id_mark;
         const GCCause::Cause count_clause = GCCause::_shenandoah_object_count;
         service_object_count_cycle(count_clause);
         service_start_time = os::javaTimeMillis();
@@ -380,7 +380,7 @@ void ShenandoahControlThread::service_object_count_cycle(GCCause::Cause cause) {
 
   ShenandoahGCSession session(cause, heap->global_generation());
 
-  // TraceCollectorStats tcs(heap->monitoring_support()->concurrent_collection_counters());
+  TraceCollectorStats tcs(heap->monitoring_support()->concurrent_collection_counters());
 
   ShenandoahObjectCountGC gc(heap->global_generation());
   gc.collect(cause);

@@ -2,7 +2,6 @@ package jdk.jfr.event.gc.objectcount;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,8 +11,6 @@ import jdk.jfr.consumer.RecordedEvent;
 import jdk.test.lib.Asserts;
 import jdk.test.lib.jfr.EventNames;
 import jdk.test.lib.jfr.Events;
-
-
 
 public class ObjectCountEvent {
     private static final String objectCountEventPath = EventNames.ObjectCount;
