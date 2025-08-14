@@ -241,6 +241,10 @@ void ShenandoahControlThread::run_service() {
         GCIdMark gc_id_mark;
         const GCCause::Cause count_clause = GCCause::_shenandoah_object_count;
         service_object_count_cycle(count_clause);
+        
+        // Reset GC Cycle
+        heap->phase_timings()->flush_par_workers_to_cycle();
+        heap->phase_timings()->flush_cycle_to_global();
         service_start_time = os::javaTimeMillis();
       }
     }
@@ -383,9 +387,10 @@ void ShenandoahControlThread::service_object_count_cycle(GCCause::Cause cause) {
   TraceCollectorStats tcs(heap->monitoring_support()->concurrent_collection_counters());
 
   ShenandoahObjectCountGC gc(heap->global_generation());
-  gc.collect(cause);
 
-  heap->tracer()->report_object_count<ShenandoahHeap, EventObjectCount>();
+  if (gc.collect(cause)) {
+    heap->tracer()->report_object_count<ShenandoahHeap, EventObjectCount>();
+  }
 }
 
 

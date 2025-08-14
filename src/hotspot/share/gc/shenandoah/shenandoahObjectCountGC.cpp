@@ -19,5 +19,7 @@ bool ShenandoahObjectCountGC::collect(GCCause::Cause cause) {
   if (check_cancellation_and_abort(ShenandoahDegenPoint::_degenerated_mark)) {
     return false;
   }
+
+  entry_reset_after_collect();
   return true;
 }
