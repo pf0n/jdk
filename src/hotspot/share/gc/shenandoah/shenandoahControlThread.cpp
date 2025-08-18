@@ -36,7 +36,7 @@
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahHeap.inline.hpp"
 #include "gc/shenandoah/shenandoahMonitoringSupport.hpp"
-#include "gc/shenandoah/shenandoahJFRObjectCountGC.hpp"
+#include "gc/shenandoah/shenandoahJfrObjectCountGC.hpp"
 #include "gc/shenandoah/shenandoahUtils.hpp"
 #include "logging/log.hpp"
 #include "memory/metaspaceStats.hpp"
@@ -241,6 +241,11 @@ void ShenandoahControlThread::run_service() {
       if (ObjectCountEventSender::should_send_event<EventObjectCount>() &&
         (os::javaTimeMillis() - jfr_event_timestamp > (jlong) ShenandoahJFRObjectCountInterval)) {
         GCIdMark gc_id_mark;
+
+        // Do not increment the GC ID:
+        // size_t current_gc_id = get_gc_id();
+        // GCIdMark gc_id_mark(get_gc_id());
+
         const GCCause::Cause count_cause = GCCause::_shenandoah_jfr_object_count;
         service_object_count_cycle(count_cause);
         
@@ -390,7 +395,7 @@ void ShenandoahControlThread::service_object_count_cycle(GCCause::Cause cause) {
 
   TraceCollectorStats tcs(heap->monitoring_support()->concurrent_collection_counters());
 
-  ShenandoahJFRObjectCountGC gc(heap->global_generation());
+  ShenandoahJfrObjectCountGC gc(heap->global_generation());
 
   if (gc.collect(cause)) {
     heap->tracer()->report_object_count<ShenandoahHeap, EventObjectCount>();

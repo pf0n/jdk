@@ -27,8 +27,10 @@ class ObjectCountEventSenderClosure : public KlassInfoClosure {
   virtual void do_cinfo(KlassInfoEntry* entry) {
     if (should_send_event(entry)) {
       ObjectCountEventSender::send<Event>(entry, _timestamp);
-      _cit->delete_entry(entry, &_total_size_in_words);
     }
+    // Delete the entry even if we don't send it. This ensure live objects that
+    // weren't sent in a previous event emission are not monotonically increasing.
+    _cit->delete_entry(entry);
   }
 
  private:
@@ -50,6 +52,7 @@ void GCTracer::report_object_count() {
   if (!cit->allocation_failed()) {
     ObjectCountEventSenderClosure<Event> event_sender(cit->size_of_instances_in_words(), Ticks::now(), cit);
     cit->iterate(&event_sender);
+    cit->reset_size_of_instances_in_words();
   }
 }
 
