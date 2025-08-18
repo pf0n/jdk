@@ -286,7 +286,6 @@ void KlassInfoTable::reset_size_of_instances_in_words() {
 
 void KlassInfoTable::delete_entry(KlassInfoEntry* entry) {
   uint idx = hash(entry->klass()) % _num_buckets;
-  size_t total_entry_size = entry->words();
   _buckets[idx].remove_from_list(entry);
 }
 
