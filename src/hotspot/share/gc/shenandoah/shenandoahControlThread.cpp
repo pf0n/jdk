@@ -36,7 +36,7 @@
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahHeap.inline.hpp"
 #include "gc/shenandoah/shenandoahMonitoringSupport.hpp"
-#include "gc/shenandoah/shenandoahObjectCountGC.hpp"
+#include "gc/shenandoah/shenandoahJFRObjectCountGC.hpp"
 #include "gc/shenandoah/shenandoahUtils.hpp"
 #include "logging/log.hpp"
 #include "memory/metaspaceStats.hpp"
@@ -51,7 +51,7 @@ ShenandoahControlThread::ShenandoahControlThread() :
 }
 
 void ShenandoahControlThread::run_service() {
-  jlong service_start_time = os::javaTimeMillis();
+  jlong jfr_event_timestamp = os::javaTimeMillis();
 
   ShenandoahHeap* const heap = ShenandoahHeap::heap();
   const GCMode default_mode = concurrent_normal;
@@ -68,8 +68,6 @@ void ShenandoahControlThread::run_service() {
   heap->set_cit(&cit);
 
   while (!should_terminate()) {
-    jlong elapsed_time = os::javaTimeMillis() - service_start_time;
-
     const GCCause::Cause cancelled_cause = heap->cancelled_cause();
     if (cancelled_cause == GCCause::_shenandoah_stop_vm) {
       break;
@@ -135,7 +133,7 @@ void ShenandoahControlThread::run_service() {
 
     const bool gc_requested = (mode != none);
     assert (!gc_requested || cause != GCCause::_last_gc_cause, "GC cause should be set");
-    
+
     if (gc_requested) {
       // Cannot uncommit bitmap slices during concurrent reset
       ShenandoahNoUncommitMark forbid_region_uncommit(heap);
@@ -181,6 +179,9 @@ void ShenandoahControlThread::run_service() {
 
       // If this cycle completed without being cancelled, notify waiters about it
       if (!heap->cancelled_gc()) {
+        if (ObjectCountEventSender::should_send_event<EventObjectCount>()) {
+          jfr_event_timestamp = os::javaTimeMillis();
+        }
         notify_alloc_failure_waiters();
       }
 
@@ -237,15 +238,17 @@ void ShenandoahControlThread::run_service() {
       // Print Metaspace change following GC (if logging is enabled).
       MetaspaceUtils::print_metaspace_change(meta_sizes);
     } else {
-      if (ObjectCountEventSender::should_send_event<EventObjectCount>() && (ShenandoahObjectCountInterval - elapsed_time) <= 0) {
+      if (ObjectCountEventSender::should_send_event<EventObjectCount>() &&
+        (os::javaTimeMillis() - jfr_event_timestamp > (jlong) ShenandoahJFRObjectCountInterval)) {
         GCIdMark gc_id_mark;
-        const GCCause::Cause count_clause = GCCause::_shenandoah_object_count;
-        service_object_count_cycle(count_clause);
+        const GCCause::Cause count_cause = GCCause::_shenandoah_jfr_object_count;
+        service_object_count_cycle(count_cause);
         
         // Reset GC Cycle
         heap->phase_timings()->flush_par_workers_to_cycle();
         heap->phase_timings()->flush_cycle_to_global();
-        service_start_time = os::javaTimeMillis();
+
+        jfr_event_timestamp = os::javaTimeMillis();
       }
     }
 
@@ -382,11 +385,12 @@ void ShenandoahControlThread::service_stw_degenerated_cycle(GCCause::Cause cause
 void ShenandoahControlThread::service_object_count_cycle(GCCause::Cause cause) {
   ShenandoahHeap* heap = ShenandoahHeap::heap();
 
+  // Create a GC Session so marking will work
   ShenandoahGCSession session(cause, heap->global_generation());
 
   TraceCollectorStats tcs(heap->monitoring_support()->concurrent_collection_counters());
 
-  ShenandoahObjectCountGC gc(heap->global_generation());
+  ShenandoahJFRObjectCountGC gc(heap->global_generation());
 
   if (gc.collect(cause)) {
     heap->tracer()->report_object_count<ShenandoahHeap, EventObjectCount>();

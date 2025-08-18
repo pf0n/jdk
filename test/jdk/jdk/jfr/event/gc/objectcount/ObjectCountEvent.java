@@ -27,12 +27,10 @@ public class ObjectCountEvent {
         recording.start();
 
         Path tempFile = Path.of("temp.jfr");
-        // if temp file exists, assertion
+        Asserts.assertFalse(Files.exists(tempFile), "File already exists.");
         recording.dump(tempFile); // Forces chunk rotation
         System.gc();
         recording.stop();
-
-        // Files.deleteIfExists(tempFile);
 
         System.out.println("gcName=" + gcName);
         List<RecordedEvent> events = Events.fromRecording(recording);
@@ -57,7 +55,7 @@ public class ObjectCountEvent {
         System.out.println("Found heapSummaryEvent: " + heapSummaryEvent.get());
 
         Events.assertField(heapSummaryEvent.get(), "heapUsed").atLeast(0L).getValue();
-        // ObjectCountEventVerifier.verify(objCountEvents);
+        ObjectCountEventVerifier.verify(objCountEvents);
     }
 
     private static boolean isMySystemGc(RecordedEvent event, String gcName) {

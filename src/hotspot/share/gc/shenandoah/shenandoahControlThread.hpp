@@ -61,6 +61,7 @@ private:
   void service_concurrent_normal_cycle(GCCause::Cause cause);
   void service_stw_full_cycle(GCCause::Cause cause);
   void service_stw_degenerated_cycle(GCCause::Cause cause, ShenandoahGC::ShenandoahDegenPoint point);
+  // Service cycle for counting live objects
   void service_object_count_cycle(GCCause::Cause cause);
 
   void notify_gc_waiters();

@@ -76,7 +76,7 @@ class GCCause : public AllStatic {
     _shenandoah_humongous_allocation_failure,
     _shenandoah_concurrent_gc,
     _shenandoah_upgrade_to_full_gc,
-    _shenandoah_object_count,
+    _shenandoah_jfr_object_count,
 
     _z_timer,
     _z_warmup,

@@ -95,8 +95,8 @@ const char* GCCause::to_string(GCCause::Cause cause) {
     case _shenandoah_allocation_failure_evac:
       return "Allocation Failure During Evacuation";
 
-    case _shenandoah_object_count:
-      return "Object Count Event Enabled";
+    case _shenandoah_jfr_object_count:
+      return "JFR Object Count Event Enabled";
 
     case _shenandoah_humongous_allocation_failure:
       return "Humongous Allocation Failure";

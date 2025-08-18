@@ -531,7 +531,7 @@
          "0 will allow back to back young collections to run during old "   \
          "collections.")                                                    \
                                                                             \
-  product(uintx, ShenandoahObjectCountInterval, 0,                          \
+  product(uintx, ShenandoahJFRObjectCountInterval, 0,                          \
         "Duration in milliseconds to run object counting GC cycles. "            \
         "0 means disabled.")                                                \
         range(0, max_uintx)                                                 \
