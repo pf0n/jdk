@@ -30,7 +30,6 @@
 #include "oops/annotations.hpp"
 #include "oops/objArrayOop.hpp"
 #include "oops/oop.hpp"
-#include "runtime/mutex.hpp"
 #include "utilities/macros.hpp"
 
 class ParallelObjectIterator;
@@ -126,8 +125,8 @@ class KlassInfoTable: public StackObj {
   bool allocation_failed() { return _buckets == nullptr; }
   size_t size_of_instances_in_words() const;
   bool merge(KlassInfoTable* table);
-
   bool merge_entry(const KlassInfoEntry* cie);
+
   friend class KlassInfoHisto;
   friend class KlassHierarchy;
 };
