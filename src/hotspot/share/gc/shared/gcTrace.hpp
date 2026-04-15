@@ -136,7 +136,7 @@ class GCTracer {
   // Report object count without performing a heap inspection. This method will
   // only work if there's a global KlassInfoTable in the heap.
   template <typename T>
-  void report_object_count() NOT_SERVICES_RETURN;
+  void report_object_count_after_gc() NOT_SERVICES_RETURN;
   void report_cpu_time_event(double user_time, double system_time, double real_time) const;
 
  protected:
