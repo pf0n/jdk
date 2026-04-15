@@ -41,13 +41,13 @@
 #include "gc/shenandoah/shenandoahPadding.hpp"
 #include "gc/shenandoah/shenandoahSharedVariables.hpp"
 #include "gc/shenandoah/shenandoahUnload.hpp"
-#include "memory/heapInspection.hpp"
 #include "memory/metaspace.hpp"
 #include "services/memoryManager.hpp"
 #include "utilities/globalDefinitions.hpp"
 #include "utilities/stack.hpp"
 
 class ConcurrentGCTimer;
+class KlassInfoTable;
 class ObjectIterateScanRootClosure;
 class ShenandoahCollectorPolicy;
 class ShenandoahGCSession;
