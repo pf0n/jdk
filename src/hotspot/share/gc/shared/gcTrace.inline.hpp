@@ -2,6 +2,7 @@
 #define SHARE_GC_SHARED_GCTRACE_INLINE_HPP
 
 #include "gc/shared/gcTrace.hpp"
+
 #include "memory/heapInspection.hpp"
 #include "utilities/macros.hpp"
 
