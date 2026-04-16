@@ -32,6 +32,7 @@
 #include "gc/shared/gcWhen.hpp"
 #include "gc/shared/objectCountEventSender.hpp"
 #include "gc/shared/workerThread.hpp"
+#include "memory/heapInspection.hpp"
 #include "memory/metaspace.hpp"
 #include "memory/referenceType.hpp"
 #include "utilities/macros.hpp"
