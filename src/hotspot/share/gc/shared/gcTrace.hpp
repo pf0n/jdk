@@ -101,23 +101,11 @@ class ObjectCountEventSenderClosure : public KlassInfoClosure {
   const Ticks _timestamp;
 
  public:
-  ObjectCountEventSenderClosure(size_t total_size_in_words, const Ticks& timestamp) :
-    _size_threshold_percentage(ObjectCountCutOffPercent / 100),
-    _total_size_in_words(total_size_in_words),
-    _timestamp(timestamp)
-  {}
-
-  virtual void do_cinfo(KlassInfoEntry* entry) {
-    if (should_send_event(entry)) {
-      ObjectCountEventSender::send(entry, _timestamp);
-    }
-  }
+  ObjectCountEventSenderClosure(size_t total_size_in_words, const Ticks& timestamp);
+  virtual void do_cinfo(KlassInfoEntry* entry);
 
  private:
-  bool should_send_event(const KlassInfoEntry* entry) const {
-    double percentage_of_heap = ((double) entry->words()) / _total_size_in_words;
-    return percentage_of_heap >= _size_threshold_percentage;
-  }
+  bool should_send_event(const KlassInfoEntry* entry) const;
 };
 #endif // INCLUDE_SERVICES
 

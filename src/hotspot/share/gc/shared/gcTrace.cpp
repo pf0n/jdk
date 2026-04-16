@@ -73,6 +73,23 @@ void GCTracer::report_gc_reference_stats(const ReferenceProcessorStats& rps) con
 }
 
 #if INCLUDE_SERVICES
+ObjectCountEventSenderClosure::ObjectCountEventSenderClosure(size_t total_size_in_words, const Ticks& timestamp) :
+    _size_threshold_percentage(ObjectCountCutOffPercent / 100),
+    _total_size_in_words(total_size_in_words),
+    _timestamp(timestamp)
+  {}
+
+void ObjectCountEventSenderClosure::do_cinfo(KlassInfoEntry* entry) {
+  if (should_send_event(entry)) {
+    ObjectCountEventSender::send(entry, _timestamp);
+  }
+}
+
+bool ObjectCountEventSenderClosure::should_send_event(const KlassInfoEntry* entry) const {
+  double percentage_of_heap = ((double) entry->words()) / _total_size_in_words;
+  return percentage_of_heap >= _size_threshold_percentage;
+}
+
 void GCTracer::report_object_count_after_gc(BoolObjectClosure* is_alive_cl, WorkerThreads* workers) {
   assert(is_alive_cl != nullptr, "Must supply function to check liveness");
 
