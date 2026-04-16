@@ -302,7 +302,7 @@ void ShenandoahConcurrentGC::vmop_entry_final_mark() {
   VMThread::execute(&op); // jump to entry_final_mark under safepoint
   // Do not report object count during a safepoint
   assert(!ShenandoahSafepoint::is_at_shenandoah_safepoint(), "Should not be at safepoint");
-  heap->tracer()->report_object_count<ShenandoahHeap>();
+  heap->tracer()->report_object_count_after_gc<ShenandoahHeap>();
 }
 
 void ShenandoahConcurrentGC::vmop_entry_init_update_refs() {

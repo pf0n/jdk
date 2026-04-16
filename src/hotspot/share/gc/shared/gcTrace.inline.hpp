@@ -7,7 +7,7 @@
 
 #if INCLUDE_SERVICES
 template <typename T>
-void GCTracer::report_object_count() {
+void GCTracer::report_object_count_after_gc() {
   if (!ObjectCountEventSender::should_send_event()) {
     return;
   }
