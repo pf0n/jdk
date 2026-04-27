@@ -59,8 +59,7 @@ public class TestCycleEndMessage {
 
                     System.out.println("Received: " + name + " / " + action);
 
-                    if (name.equals("Shenandoah Cycles") &&
-                        (action.contains("Global") || action.contains("Young") || action.contains("Old"))) {
+                    if (name.equals("Shenandoah Global GC Cycle") && (action.contains("Global"))) {
                         foundGenerationInCycle.set(true);
                     }
                 }
