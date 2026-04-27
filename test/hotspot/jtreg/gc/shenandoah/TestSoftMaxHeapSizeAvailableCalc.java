@@ -96,7 +96,7 @@ public class TestSoftMaxHeapSizeAvailableCalc {
             List<java.lang.management.GarbageCollectorMXBean> collectors = ManagementFactory.getGarbageCollectorMXBeans();
             java.lang.management.GarbageCollectorMXBean cycleCollector = null;
             for (java.lang.management.GarbageCollectorMXBean bean : collectors) {
-                if (bean.getName().contains("Cycles")) {
+                if (bean.getName().contains("Cycle")) {
                     cycleCollector = bean;
                 }
             }

@@ -180,7 +180,7 @@ public class TestStringDedupStress {
         Random rn = Utils.getRandomInstance();
 
         for (GarbageCollectorMXBean bean : ManagementFactory.getGarbageCollectorMXBeans()) {
-            if ("Shenandoah Cycles".equals(bean.getName())) {
+            if (bean.getName().contains("Cycle")) {
                 gcCycleMBean = bean;
                 break;
             }
