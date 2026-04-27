@@ -106,7 +106,6 @@ import jdk.test.lib.Utils;
 import com.sun.management.GarbageCollectionNotificationInfo;
 
 public class TestPauseNotifications {
-
     static final long HEAP_MB = 128;                           // adjust for test configuration above
     static final long TARGET_MB = Long.getLong("target", 2_000); // 2 Gb allocation
     static final long STEP_MS = 1000;
@@ -147,7 +146,10 @@ public class TestPauseNotifications {
                             if (!isExpectedPauseAction(info.getGcAction())) {
                                 throw new IllegalStateException("Unknown action: " + info.getGcAction());
                             }
-                        } else if (name.equals("Shenandoah Cycles")) {
+                        } else if (name.equals("Shenandoah Cycles") || 
+                                   name.equals("Shenandoah Young Gen GC Cycle") ||
+                                   name.equals("Shenandoah Old Gen GC Cycle") ||
+                                   name.equals("Shenandoah Global GC Cycle")) {
                             cyclesCount.incrementAndGet();
                             cyclesDuration.addAndGet(d);
                         } else {
@@ -198,7 +200,7 @@ public class TestPauseNotifications {
         actualCycles = cyclesCount.get();
         long actualPauseDuration = pausesDuration.get();
         long actualCycleDuration = cyclesDuration.get();
-
+        
         {
             String msg = "Pauses expected = [" + minExpected + "; +inf], actual = " + actualPauses;
             if (minExpected <= actualPauses) {
