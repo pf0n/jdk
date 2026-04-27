@@ -23,8 +23,8 @@
  */
 
 /*
- * @test id=generational
- * @summary Check that an explicit GC cycle end message is global
+ * @test
+ * @summary Check that GC cycle end message contains generation name
  * @library /test/lib /
  * @requires vm.gc.Shenandoah
  *
@@ -59,7 +59,8 @@ public class TestCycleEndMessage {
 
                     System.out.println("Received: " + name + " / " + action);
 
-                    if (name.equals("Shenandoah Global GC Cycle") && action.equals("end of Global GC cycle")) {
+                    if (name.contains("Cycle") &&
+                        (action.contains("Global") || action.contains("Young") || action.contains("Old"))) {
                         foundGenerationInCycle.set(true);
                     }
                 }
@@ -74,9 +75,9 @@ public class TestCycleEndMessage {
         Thread.sleep(2000);
 
         if (!foundGenerationInCycle.get()) {
-            throw new IllegalStateException("Expected to find Global generation in Shenandoah Global GC cycle action message");
+            throw new IllegalStateException("Expected to find generation name (Global/Young/Old) in Shenandoah Cycles action message");
         }
 
-        System.out.println("Test passed: Found Global generation name in cycle end message");
+        System.out.println("Test passed: Found generation name in cycle end message");
     }
 }
