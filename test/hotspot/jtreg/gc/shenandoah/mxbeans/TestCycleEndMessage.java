@@ -74,9 +74,9 @@ public class TestCycleEndMessage {
         Thread.sleep(2000);
 
         if (!foundGenerationInCycle.get()) {
-            throw new IllegalStateException("Expected to find generation name (Global/Young/Old) in Shenandoah Cycles action message");
+            throw new IllegalStateException("Expected to find Global generation in Shenandoah Global GC cycle action message");
         }
 
-        System.out.println("Test passed: Found generation name in cycle end message");
+        System.out.println("Test passed: Found Global generation name in cycle end message");
     }
 }
