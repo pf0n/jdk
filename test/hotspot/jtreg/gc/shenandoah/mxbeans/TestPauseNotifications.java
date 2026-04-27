@@ -200,7 +200,7 @@ public class TestPauseNotifications {
         actualCycles = cyclesCount.get();
         long actualPauseDuration = pausesDuration.get();
         long actualCycleDuration = cyclesDuration.get();
-        
+
         {
             String msg = "Pauses expected = [" + minExpected + "; +inf], actual = " + actualPauses;
             if (minExpected <= actualPauses) {
