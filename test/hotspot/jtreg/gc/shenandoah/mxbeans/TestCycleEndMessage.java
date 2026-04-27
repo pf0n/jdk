@@ -23,8 +23,8 @@
  */
 
 /*
- * @test
- * @summary Check that GC cycle end message contains generation name
+ * @test id=generational
+ * @summary Check that an explicit GC cycle end message is global
  * @library /test/lib /
  * @requires vm.gc.Shenandoah
  *
@@ -37,7 +37,7 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.management.Notification;
-import javax.management.NotificationEmitter;
+import javax.management.NotificationEmitter;z
 import javax.management.NotificationListener;
 import javax.management.openmbean.CompositeData;
 
@@ -59,7 +59,7 @@ public class TestCycleEndMessage {
 
                     System.out.println("Received: " + name + " / " + action);
 
-                    if (name.equals("Shenandoah Global GC Cycle") && (action.contains("Global"))) {
+                    if (name.equals("Shenandoah Global GC Cycle") && action.contains("Global")) {
                         foundGenerationInCycle.set(true);
                     }
                 }
