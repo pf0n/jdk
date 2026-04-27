@@ -95,7 +95,7 @@ public class TestSoftMaxHeapSizeAvailableCalc {
             final int expectedMaxGcCount = Integer.getInteger("expectedMaxGcCount", 30);
             List<java.lang.management.GarbageCollectorMXBean> collectors = ManagementFactory.getGarbageCollectorMXBeans();
             // There are multiple types of GC cycles that exist for Generational Shenandoah (Global/Young/Old).
-            // Each generation has it's own MXBean, so we must account for all types of GC cycles.
+            // Each generation has its own MXBean, so we must account for all types of GC cycles.
             List<java.lang.management.GarbageCollectorMXBean> cycleCollectors = new ArrayList<>();
             for (java.lang.management.GarbageCollectorMXBean bean : collectors) {
                 if (bean.getName().contains("Cycle")) {
