@@ -85,6 +85,14 @@ public class TestReferenceRefersTo {
         if (!WB.isObjectInOldGen(o)) {
             WB.fullGC();
             if (!WB.isObjectInOldGen(o)) {
+                if (WB.getBooleanVMFlag("UseShenandoahGC") && WB.getStringVMFlag("ShenandoahGCMode").equals("generational")) {
+                    // This is just a warning, because failing would
+                    // be overspecifying for generational shenandoah,
+                    // which need not necessarily promote objects upon
+                    // a full GC.
+                    warn("object not promoted by full gc");
+                    return;
+                }
                 fail("object not promoted by full gc");
             }
         }
@@ -110,6 +118,10 @@ public class TestReferenceRefersTo {
 
     private static void fail(String msg) throws Exception {
         throw new RuntimeException(msg);
+    }
+
+    private static void warn(String msg) {
+        System.out.println("Warning: " + msg);
     }
 
     private static void expectCleared(Reference<TestObject> ref,
