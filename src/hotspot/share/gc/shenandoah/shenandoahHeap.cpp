@@ -407,7 +407,8 @@ jint ShenandoahHeap::initialize() {
   }
 
   _regions = NEW_C_HEAP_ARRAY(ShenandoahHeapRegion*, _num_regions, mtGC);
-  _affiliations = NEW_C_HEAP_ARRAY(uint8_t, _num_regions, mtGC);
+  _biased_affiliations = NEW_C_HEAP_ARRAY(uint8_t, _num_regions + ((uintx)sh_rs.base() >> ShenandoahHeapRegion::region_size_bytes_shift()),  mtGC);
+  _affiliations = _biased_affiliations + ((uintx)sh_rs.base() >> ShenandoahHeapRegion::region_size_bytes_shift());
 
   {
     ShenandoahHeapLocker locker(lock());
@@ -563,6 +564,7 @@ ShenandoahHeap::ShenandoahHeap(ShenandoahCollectorPolicy* policy) :
   _num_regions(0),
   _regions(nullptr),
   _affiliations(nullptr),
+  _biased_affiliations(nullptr),
   _gc_state_changed(false),
   _gc_no_progress_count(0),
   _cancel_requested_time(0),

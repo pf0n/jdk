@@ -287,6 +287,7 @@ private:
   size_t    _num_regions;
   ShenandoahHeapRegion** _regions;
   uint8_t* _affiliations;       // Holds array of enum ShenandoahAffiliation, including FREE status in non-generational mode
+  uint8_t* _biased_affiliations;
 
 public:
 
@@ -640,6 +641,7 @@ public:
   inline bool is_in_old_during_young_collection(oop obj) const;
 
   inline ShenandoahAffiliation region_affiliation(const ShenandoahHeapRegion* r) const;
+  inline ShenandoahAffiliation region_affiliation(const void* p) const;
   inline void set_affiliation(ShenandoahHeapRegion* r, ShenandoahAffiliation new_affiliation);
 
   inline ShenandoahAffiliation region_affiliation(size_t index) const;

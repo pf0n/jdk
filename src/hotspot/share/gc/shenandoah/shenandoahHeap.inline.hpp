@@ -383,11 +383,11 @@ inline bool ShenandoahHeap::is_in_active_generation(oop obj) const {
 }
 
 inline bool ShenandoahHeap::is_in_young(const void* p) const {
-  return is_in_reserved(p) && (region_affiliation(heap_region_index_containing(p)) == ShenandoahAffiliation::YOUNG_GENERATION);
+  return is_in_reserved(p) && (region_affiliation(p) == ShenandoahAffiliation::YOUNG_GENERATION);
 }
 
 inline bool ShenandoahHeap::is_in_old(const void* p) const {
-  return is_in_reserved(p) && (region_affiliation(heap_region_index_containing(p)) == ShenandoahAffiliation::OLD_GENERATION);
+  return is_in_reserved(p) && (region_affiliation(p) == ShenandoahAffiliation::OLD_GENERATION);
 }
 
 inline bool ShenandoahHeap::is_in_old_during_young_collection(oop obj) const {
@@ -396,6 +396,11 @@ inline bool ShenandoahHeap::is_in_old_during_young_collection(oop obj) const {
 
 inline ShenandoahAffiliation ShenandoahHeap::region_affiliation(const ShenandoahHeapRegion *r) const {
   return region_affiliation(r->index());
+}
+
+inline ShenandoahAffiliation ShenandoahHeap::region_affiliation(const void* p) const {
+  uintptr_t index = ((uintptr_t) p) >> ShenandoahHeapRegion::region_size_bytes_shift();
+  return (ShenandoahAffiliation) AtomicAccess::load(_biased_affiliations + index);
 }
 
 inline void ShenandoahHeap::assert_lock_for_affiliation(ShenandoahAffiliation orig_affiliation,
