@@ -15,8 +15,4 @@ void ShenandoahObjectCountClosure::merge_table(KlassInfoTable* global_cit) {
   assert(success, "Failed to merge thread-local table");
 }
 
-bool ShenandoahObjectCountClosure::should_visit(oop o) {
-  return _filter->do_object_b(o);
-}
-
 #endif // INCLUDE_JFR

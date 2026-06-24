@@ -135,8 +135,7 @@ void ShenandoahMarkConcurrentRootsTask<GENERATION>::work(uint worker_id) {
   if (object_count_enabled && !ShenandoahHeap::heap()->mode()->is_generational()) {
     KlassInfoTable* const global_cit = ShenandoahHeap::heap()->get_cit();
     KlassInfoTable local_cit(false);
-    ShenandoahIsAliveClosure is_alive;
-    ShenandoahObjectCountClosure count(&local_cit, &is_alive);
+    ShenandoahObjectCountClosure count(&local_cit);
     ShenandoahMarkRefsAndCountClosure<GENERATION> cl(q, _rp, old_q, &count);
     _root_scanner.roots_do(&cl, worker_id);
     count.merge_table(global_cit);

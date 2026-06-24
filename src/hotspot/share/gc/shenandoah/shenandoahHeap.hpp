@@ -235,9 +235,6 @@ private:
   ShenandoahAllocationRate _alloc_rate;
   ShenandoahDecayAllocRate _alloc_rate_decay;
 
-  ShenandoahAllocationRate _alloc_rate;
-  ShenandoahDecayAllocRate _alloc_rate_decay;
-
 public:
   void increase_committed(size_t bytes);
   void decrease_committed(size_t bytes);
@@ -880,5 +877,20 @@ private:
   void try_inject_alloc_failure();
   bool should_inject_alloc_failure();
 };
+
+#if INCLUDE_JFR
+class ShenandoahKlassInfoTableScope : public StackObj {
+  ShenandoahHeap* const _heap;
+  KlassInfoTable        _cit;
+public:
+  ShenandoahKlassInfoTableScope(ShenandoahHeap* heap): _heap(heap), _cit(false) {
+    _heap->set_cit(&_cit);
+  }
+
+  ~ShenandoahKlassInfoTableScope() {
+    _heap->set_cit(nullptr);
+  }
+};
+#endif // INCLUDE_JFR
 
 #endif // SHARE_GC_SHENANDOAH_SHENANDOAHHEAP_HPP

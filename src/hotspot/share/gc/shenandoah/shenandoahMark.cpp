@@ -76,8 +76,7 @@ void ShenandoahMark::mark_loop_prework(uint w, TaskTerminator *t, StringDedup::R
     if (object_count_enabled && !ShenandoahHeap::heap()->mode()->is_generational()) {
       KlassInfoTable* const global_cit = ShenandoahHeap::heap()->get_cit();
       KlassInfoTable local_cit(false);
-      ShenandoahIsAliveClosure is_alive;
-      ShenandoahObjectCountClosure count(&local_cit, &is_alive);
+      ShenandoahObjectCountClosure count(&local_cit);
       using Closure = ShenandoahMarkRefsAndCountClosure<GENERATION>;
       Closure cl(q, rp, old_q, &count);
       mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, ld, w, t, req);

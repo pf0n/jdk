@@ -129,10 +129,7 @@ void ShenandoahControlThread::run_service() {
 
     if (gc_requested) {
       // Create the KlassInfoTable for Shenandoah only if JFR is enabled.
-#if INCLUDE_JFR
-      KlassInfoTable cit(false);
-      heap->set_cit(&cit);
-#endif // INCLUDE_JFR
+      JFR_ONLY(ShenandoahKlassInfoTableScope cit(heap));
 
       // Cannot uncommit bitmap slices during concurrent reset
       ShenandoahNoUncommitMark forbid_region_uncommit(heap);
@@ -212,7 +209,6 @@ void ShenandoahControlThread::run_service() {
 
       // Print Metaspace change following GC (if logging is enabled).
       MetaspaceUtils::print_metaspace_change(meta_sizes);
-      JFR_ONLY(heap->set_cit(nullptr));
     }
 
     // Check if we have seen a new target for soft max heap size or if a gc was requested.
