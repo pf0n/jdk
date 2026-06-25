@@ -4,14 +4,12 @@
 
 #if INCLUDE_JFR
 
-void ShenandoahObjectCountClosure::merge_table(KlassInfoTable* global_cit) {
-  assert(_cit != nullptr, "The thread-local KlassInfoTable is not initialized");
-  assert(global_cit != nullptr, "Shenandoah KlassInfoTable is not initialized");
-  MutexLocker x(ObjectCountMerge_lock, Mutex::_no_safepoint_check_flag);
-  bool success = global_cit->merge(_cit);
+void ShenandoahObjectCountClosure::merge_table() {
+  KlassInfoTable* heap_cit = ShenandoahHeap::heap()->get_cit();
+  assert(heap_cit != nullptr, "Heap KlassInfoTable is not initialized");
 
-  // Clear the _cit in the closure to ensure it won't be used again.
-  _cit = nullptr;
+  MutexLocker x(ObjectCountMerge_lock, Mutex::_no_safepoint_check_flag);
+  bool success = heap_cit->merge(&_cit);
   assert(success, "Failed to merge thread-local table");
 }
 

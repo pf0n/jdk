@@ -883,13 +883,8 @@ class ShenandoahKlassInfoTableScope : public StackObj {
   ShenandoahHeap* const _heap;
   KlassInfoTable        _cit;
 public:
-  ShenandoahKlassInfoTableScope(ShenandoahHeap* heap): _heap(heap), _cit(false) {
-    _heap->set_cit(&_cit);
-  }
-
-  ~ShenandoahKlassInfoTableScope() {
-    _heap->set_cit(nullptr);
-  }
+  inline ShenandoahKlassInfoTableScope(ShenandoahHeap* heap);
+  inline ~ShenandoahKlassInfoTableScope();
 };
 #endif // INCLUDE_JFR
 

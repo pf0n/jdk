@@ -664,4 +664,15 @@ inline KlassInfoTable* ShenandoahHeap::get_cit() {
   return _cit;
 }
 
+#if INCLUDE_JFR
+inline ShenandoahKlassInfoTableScope::ShenandoahKlassInfoTableScope(ShenandoahHeap* heap) :
+  _heap(heap), _cit(false) {
+  _heap->set_cit(&_cit);
+}
+
+inline ShenandoahKlassInfoTableScope::~ShenandoahKlassInfoTableScope() {
+  _heap->set_cit(nullptr);
+}
+#endif // INCLUDE_JFR
+
 #endif // SHARE_GC_SHENANDOAH_SHENANDOAHHEAP_INLINE_HPP
