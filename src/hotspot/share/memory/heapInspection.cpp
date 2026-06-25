@@ -181,7 +181,6 @@ KlassInfoTable::KlassInfoTable(bool add_all_classes) {
       AllClassesFinder finder(this);
       ClassLoaderDataGraph::classes_do(&finder);
     }
-    log_info(gc)("Initialized klass info table...");
   }
 }
 

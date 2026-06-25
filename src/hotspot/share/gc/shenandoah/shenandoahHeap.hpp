@@ -879,6 +879,10 @@ private:
 };
 
 #if INCLUDE_JFR
+// RAII class that creates a KlassInfoTable on ShenandoahHeap for
+// the duration of a GC cycle. Workers accumulate per-Klass counts into
+// the  table during marking. After the cycle is done, the KlassInfoTable
+// is destroyed.
 class ShenandoahKlassInfoTableScope : public StackObj {
   ShenandoahHeap* const _heap;
   KlassInfoTable        _cit;

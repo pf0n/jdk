@@ -136,11 +136,14 @@ void ShenandoahSTWMark::mark_roots(uint worker_id) {
         ShenandoahObjectCountClosure count;
         ShenandoahMarkRefsAndCountClosure<NON_GEN> init_mark(queue, rp, nullptr, &count);
         _root_scanner.roots_do(&init_mark, worker_id);
-      }
+        break;
+      } else
 #endif // INCLUDE_JFR
-      ShenandoahMarkRefsClosure<NON_GEN> init_mark(queue, rp, nullptr);
-      _root_scanner.roots_do(&init_mark, worker_id);
-      break;
+      {
+        ShenandoahMarkRefsClosure<NON_GEN> init_mark(queue, rp, nullptr);
+        _root_scanner.roots_do(&init_mark, worker_id);
+        break;
+      }
     }
     case GLOBAL: {
       ShenandoahMarkRefsClosure<GLOBAL> init_mark(queue, rp, nullptr);

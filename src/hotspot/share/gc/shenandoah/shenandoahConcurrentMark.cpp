@@ -44,7 +44,6 @@
 #include "runtime/continuation.hpp"
 #include "runtime/threads.hpp"
 
-
 template <ShenandoahGenerationType GENERATION>
 class ShenandoahConcurrentMarkingTask : public WorkerTask {
 private:

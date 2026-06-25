@@ -27,6 +27,7 @@
 #include "gc/shared/gcId.hpp"
 #include "gc/shared/gcTimer.hpp"
 #include "gc/shared/gcTrace.hpp"
+#include "gc/shared/objectCountEventSender.hpp"
 #include "gc/shared/referenceProcessorStats.hpp"
 #include "memory/heapInspection.hpp"
 #include "memory/resourceArea.hpp"
@@ -73,6 +74,31 @@ void GCTracer::report_gc_reference_stats(const ReferenceProcessorStats& rps) con
 }
 
 #if INCLUDE_SERVICES
+class ObjectCountEventSenderClosure : public KlassInfoClosure {
+  const double _size_threshold_percentage;
+  const size_t _total_size_in_words;
+  const Ticks _timestamp;
+
+ public:
+  ObjectCountEventSenderClosure(size_t total_size_in_words, const Ticks& timestamp) :
+    _size_threshold_percentage(ObjectCountCutOffPercent / 100),
+    _total_size_in_words(total_size_in_words),
+    _timestamp(timestamp)
+  {}
+
+  virtual void do_cinfo(KlassInfoEntry* entry) {
+    if (should_send_event(entry)) {
+      ObjectCountEventSender::send(entry, _timestamp);
+    }
+  }
+
+ private:
+  bool should_send_event(const KlassInfoEntry* entry) const {
+    double percentage_of_heap = ((double) entry->words()) / _total_size_in_words;
+    return percentage_of_heap >= _size_threshold_percentage;
+  }
+};
+
 void GCTracer::report_object_count_after_gc(BoolObjectClosure* is_alive_cl, WorkerThreads* workers) {
   assert(is_alive_cl != nullptr, "Must supply function to check liveness");
 
@@ -87,6 +113,15 @@ void GCTracer::report_object_count_after_gc(BoolObjectClosure* is_alive_cl, Work
       cit.iterate(&event_sender);
     }
   }
+}
+
+void GCTracer::report_object_count_after_gc(KlassInfoTable* cit) {
+  if (!ObjectCountEventSender::should_send_event() || cit == nullptr || cit->allocation_failed()) {
+    return;
+  }
+
+  ObjectCountEventSenderClosure event_sender(cit->size_of_instances_in_words(), Ticks::now());
+  cit->iterate(&event_sender);
 }
 #endif // INCLUDE_SERVICES
 
