@@ -26,7 +26,9 @@
 
 #include "gc/shared/stringdedup/stringDedup.hpp"
 #include "gc/shenandoah/shenandoahGenerationType.hpp"
+#if INCLUDE_JFR
 #include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 #include "gc/shenandoah/shenandoahTaskqueue.hpp"
 #include "memory/iterator.hpp"
 #include "runtime/javaThread.hpp"

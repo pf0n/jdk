@@ -25,13 +25,14 @@
 #ifndef SHARE_GC_SHENANDOAH_SHENANDOAHOBJECTCOUNTCLOSURE_HPP
 #define SHARE_GC_SHENANDOAH_SHENANDOAHOBJECTCOUNTCLOSURE_HPP
 
+#include "utilities/macros.hpp"
+#if INCLUDE_JFR
 #include "memory/heapInspection.hpp"
 #include "oops/access.hpp"
 #include "oops/compressedOops.inline.hpp"
 #include "oops/oop.inline.hpp"
 #include "runtime/mutex.hpp"
 
-#if INCLUDE_JFR
 class ShenandoahObjectCountClosure {
 private:
   KlassInfoTable _cit;

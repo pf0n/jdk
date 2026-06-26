@@ -22,18 +22,20 @@
  *
  */
 
-#include "utilities/macros.hpp"
-#if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahHeap.inline.hpp"
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
-#include "runtime/mutexLocker.hpp"
+package jdk.jfr.event.gc.objectcount;
+import jdk.test.lib.jfr.GCHelper;
 
-void ShenandoahObjectCountClosure::merge_table() {
-  KlassInfoTable* heap_cit = ShenandoahHeap::heap()->get_cit();
-  assert(heap_cit != nullptr, "Heap KlassInfoTable is not initialized");
-
-  MutexLocker x(ObjectCountMerge_lock, Mutex::_no_safepoint_check_flag);
-  bool success = heap_cit->merge(&_cit);
-  assert(success, "Failed to merge thread-local table");
+/**
+ * @test
+ * @requires vm.flagless
+ * @requires vm.hasJFR
+ * @requires (vm.gc == "Shenandoah" | vm.gc == null)
+ *           & vm.opt.ExplicitGCInvokesConcurrent != true
+ * @library /test/lib /test/jdk
+ * @run main/othervm -XX:+UseShenandoahGC -XX:-ExplicitGCInvokesConcurrent -XX:-UseCompressedOops -XX:-UseCompressedClassPointers jdk.jfr.event.gc.objectcount.TestObjectCountAfterGCEventWithShenandoahSTWCollection
+ */
+public class TestObjectCountAfterGCEventWithShenandoahSTWCollection {
+    public static void main(String[] args) throws Exception {
+        ObjectCountAfterGCEvent.test(GCHelper.gcShenandoah);
+    }
 }
-#endif // INCLUDE_JFR

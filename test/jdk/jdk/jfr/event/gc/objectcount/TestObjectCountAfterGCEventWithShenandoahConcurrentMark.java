@@ -30,11 +30,11 @@ import jdk.test.lib.jfr.GCHelper;
  * @requires vm.flagless
  * @requires vm.hasJFR
  * @requires (vm.gc == "Shenandoah" | vm.gc == null)
- *           & vm.opt.ExplicitGCInvokesConcurrent != true
+ *           & vm.opt.ExplicitGCInvokesConcurrent != false
  * @library /test/lib /test/jdk
- * @run main/othervm -XX:+UseShenandoahGC -XX:-UseCompressedOops -XX:-UseCompressedClassPointers jdk.jfr.event.gc.objectcount.TestObjectCountAfterGCEventWithShenandoah
+ * @run main/othervm -XX:+UseShenandoahGC -XX:+ExplicitGCInvokesConcurrent -XX:-UseCompressedOops -XX:-UseCompressedClassPointers jdk.jfr.event.gc.objectcount.TestObjectCountAfterGCEventWithShenandoahConcurrentMark
  */
-public class TestObjectCountAfterGCEventWithShenandoah {
+public class TestObjectCountAfterGCEventWithShenandoahConcurrentMark {
     public static void main(String[] args) throws Exception {
         ObjectCountAfterGCEvent.test(GCHelper.gcShenandoah);
     }

@@ -128,7 +128,7 @@ void ShenandoahControlThread::run_service() {
     assert (!gc_requested || cause != GCCause::_last_gc_cause, "GC cause should be set");
 
     if (gc_requested) {
-      // Create the KlassInfoTable for Shenandoah only if JFR is enabled.
+      // Create a KlassInfoTable for ObjectCountAfterGC during this cycle.
       JFR_ONLY(ShenandoahKlassInfoTableScope cit(heap));
 
       // Cannot uncommit bitmap slices during concurrent reset

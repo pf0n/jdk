@@ -32,7 +32,9 @@
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahGenerationType.hpp"
 #include "gc/shenandoah/shenandoahMark.inline.hpp"
+#if INCLUDE_JFR
 #include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 #include "gc/shenandoah/shenandoahReferenceProcessor.hpp"
 #include "gc/shenandoah/shenandoahRootProcessor.inline.hpp"
 #include "gc/shenandoah/shenandoahSTWMark.hpp"
@@ -131,8 +133,7 @@ void ShenandoahSTWMark::mark_roots(uint worker_id) {
     case NON_GEN: {
 #if INCLUDE_JFR
       // Use object counting closure if ObjectCountAfterGC event is enabled.
-      const bool object_count_enabled = ObjectCountEventSender::should_send_event();
-      if (object_count_enabled) {
+      if (ObjectCountEventSender::should_send_event()) {
         ShenandoahObjectCountClosure count;
         ShenandoahMarkRefsAndCountClosure<NON_GEN> init_mark(queue, rp, nullptr, &count);
         _root_scanner.roots_do(&init_mark, worker_id);

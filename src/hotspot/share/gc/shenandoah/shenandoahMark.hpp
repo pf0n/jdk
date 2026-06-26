@@ -93,11 +93,13 @@ private:
   template <ShenandoahGenerationType GENERATION>
   static bool in_generation(ShenandoahHeap* const heap, oop obj);
 
-  // Return true if object was not previously marked strong by another thread.
+  // Returns true if this call was the first to strongly mark the object.
+  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
   template <class T>
   static bool mark_non_generational_ref(T *p, ShenandoahObjToScanQueue* q, ShenandoahMarkingContext* const mark_context, bool weak);
 
-  // Return true if object was not previously marked strong by another thread.
+  // Returns true if this call was the first to strongly mark the object.
+  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
   static bool mark_ref(ShenandoahObjToScanQueue* q,
                        ShenandoahMarkingContext* const mark_context,
                        bool weak, oop obj);

@@ -104,10 +104,15 @@ class GCTracer {
   void report_gc_heap_summary(GCWhen::Type when, const GCHeapSummary& heap_summary) const;
   void report_metaspace_summary(GCWhen::Type when, const MetaspaceSummary& metaspace_summary) const;
   void report_gc_reference_stats(const ReferenceProcessorStats& rp) const;
+
+  // Walk the heap to build a KlassInfoTable, then emit ObjectCountAfterGC events
+  // from it. Used by collectors that don't populate a KlassInfoTable during marking.
   void report_object_count_after_gc(BoolObjectClosure* object_filter, WorkerThreads* workers) NOT_SERVICES_RETURN;
-  // Takes in a KlassInfoTable that is stored inside the collector's heap.
-  // The KlassInfoTable is already populated when calling this method.
-  void report_object_count_after_gc(KlassInfoTable *cit) NOT_SERVICES_RETURN;
+
+  // Emit ObjectCountAfterGC events from a pre-populated KlassInfoTable.
+  // Used by collectors that populate the table during marking.
+  void report_object_count_after_gc(KlassInfoTable* cit) NOT_SERVICES_RETURN;
+
   void report_cpu_time_event(double user_time, double system_time, double real_time) const;
 
  protected:

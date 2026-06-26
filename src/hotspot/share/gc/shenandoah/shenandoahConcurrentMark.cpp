@@ -33,7 +33,9 @@
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahHeap.inline.hpp"
 #include "gc/shenandoah/shenandoahMark.inline.hpp"
+#if INCLUDE_JFR
 #include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 #include "gc/shenandoah/shenandoahPhaseTimings.hpp"
 #include "gc/shenandoah/shenandoahReferenceProcessor.hpp"
 #include "gc/shenandoah/shenandoahRootProcessor.inline.hpp"
@@ -131,8 +133,7 @@ void ShenandoahMarkConcurrentRootsTask<GENERATION>::work(uint worker_id) {
 
 #if INCLUDE_JFR
   // Use object counting closure if ObjectCountAfterGC event is enabled.
-  const bool object_count_enabled = ObjectCountEventSender::should_send_event();
-  if (object_count_enabled && !ShenandoahHeap::heap()->mode()->is_generational()) {
+  if (ObjectCountEventSender::should_send_event() && !ShenandoahHeap::heap()->mode()->is_generational()) {
     ShenandoahObjectCountClosure count;
     ShenandoahMarkRefsAndCountClosure<GENERATION> cl(q, _rp, old_q, &count);
     _root_scanner.roots_do(&cl, worker_id);
