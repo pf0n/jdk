@@ -43,6 +43,7 @@ class PSHeapSummary;
 class ReferenceProcessorStats;
 class TimePartitions;
 class BoolObjectClosure;
+class KlassInfoTable;
 
 class SharedGCInfo {
  private:
