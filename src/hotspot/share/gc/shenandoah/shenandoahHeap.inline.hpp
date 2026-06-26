@@ -653,6 +653,7 @@ inline ShenandoahMarkingContext* ShenandoahHeap::marking_context() const {
   return _marking_context;
 }
 
+#if INCLUDE_JFR
 inline void ShenandoahHeap::set_cit(KlassInfoTable* cit) {
   assert(_cit == nullptr || cit == nullptr, "Overwriting an existing histogram");
   assert(_cit != nullptr || cit != nullptr, "Already cleared");
@@ -664,7 +665,6 @@ inline KlassInfoTable* ShenandoahHeap::get_cit() {
   return _cit;
 }
 
-#if INCLUDE_JFR
 inline ShenandoahKlassInfoTableScope::ShenandoahKlassInfoTableScope(ShenandoahHeap* heap) :
   _heap(heap), _cit(false) {
   _heap->set_cit(&_cit);

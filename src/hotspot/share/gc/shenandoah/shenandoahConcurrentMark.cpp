@@ -23,6 +23,7 @@
  *
  */
 
+
 #include "gc/shared/objectCountEventSender.hpp"
 #include "gc/shared/satbMarkQueue.hpp"
 #include "gc/shared/taskTerminator.hpp"

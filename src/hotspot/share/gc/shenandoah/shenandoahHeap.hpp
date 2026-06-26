@@ -41,7 +41,9 @@
 #include "gc/shenandoah/shenandoahPadding.hpp"
 #include "gc/shenandoah/shenandoahSharedVariables.hpp"
 #include "gc/shenandoah/shenandoahUnload.hpp"
+#if INCLUDE_JFR
 #include "memory/heapInspection.hpp"
+#endif // INCLUDE_JFR
 #include "memory/metaspace.hpp"
 #include "services/memoryManager.hpp"
 #include "utilities/globalDefinitions.hpp"
@@ -230,7 +232,7 @@ private:
   shenandoah_padding(1);
 
   // Used for JFR object count event support.
-  KlassInfoTable* _cit;
+  JFR_ONLY(KlassInfoTable* _cit);
 
   ShenandoahAllocationRate _alloc_rate;
   ShenandoahDecayAllocRate _alloc_rate_decay;
@@ -249,9 +251,11 @@ public:
 
   void set_soft_max_capacity(size_t v);
 
+#if INCLUDE_JFR
   // Setter & accessor for class histogram
   inline void set_cit(KlassInfoTable* cit);
   inline KlassInfoTable* get_cit();
+#endif // INCLUDE_JFR
 
   ShenandoahAllocationRate& alloc_rate() {
     return _alloc_rate;
@@ -881,7 +885,7 @@ private:
 #if INCLUDE_JFR
 // RAII class that creates a KlassInfoTable on ShenandoahHeap for
 // the duration of a GC cycle. Workers accumulate per-Klass counts into
-// the  table during marking. After the cycle is done, the KlassInfoTable
+// the table during marking. After the cycle is done, the KlassInfoTable
 // is destroyed.
 class ShenandoahKlassInfoTableScope : public StackObj {
   ShenandoahHeap* const _heap;

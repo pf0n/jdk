@@ -50,7 +50,7 @@ protected:
   ShenandoahMark(ShenandoahGeneration* generation);
 
 public:
-  // Returns true if object was strongly marked.
+  // Return true if object was not previously marked strong by another thread.
   template<class T, ShenandoahGenerationType GENERATION>
   static inline bool mark_through_ref(T* p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak);
 
@@ -93,11 +93,11 @@ private:
   template <ShenandoahGenerationType GENERATION>
   static bool in_generation(ShenandoahHeap* const heap, oop obj);
 
-  // Returns true if object was strongly marked.
+  // Return true if object was not previously marked strong by another thread.
   template <class T>
   static bool mark_non_generational_ref(T *p, ShenandoahObjToScanQueue* q, ShenandoahMarkingContext* const mark_context, bool weak);
 
-  // Returns true if object was strongly marked.
+  // Return true if object was not previously marked strong by another thread.
   static bool mark_ref(ShenandoahObjToScanQueue* q,
                        ShenandoahMarkingContext* const mark_context,
                        bool weak, oop obj);
