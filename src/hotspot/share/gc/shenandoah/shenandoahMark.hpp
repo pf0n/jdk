@@ -50,7 +50,8 @@ protected:
   ShenandoahMark(ShenandoahGeneration* generation);
 
 public:
-  // Return true if object was not previously marked strong by another thread.
+  // Returns true if this call was the first to strongly mark the object.
+  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
   template<class T, ShenandoahGenerationType GENERATION>
   static inline bool mark_through_ref(T* p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak);
 

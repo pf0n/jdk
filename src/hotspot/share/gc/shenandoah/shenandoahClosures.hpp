@@ -74,8 +74,9 @@ private:
   bool _weak;
 
 protected:
+  // Returns true if this call was the first to strongly mark the object.
+  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
   template <class T, ShenandoahGenerationType GENERATION>
-  // Return true if object was not previously marked strong by another thread.
   bool work(T *p);
 
 public:
@@ -116,7 +117,8 @@ private:
   ShenandoahObjectCountClosure* _count;
   template <class T>
   inline void do_oop_work(T* p) {
-    // Count newly marked strong references to avoid double counting.
+    // Returns true only when this call strongly marks an object.
+    // That gives us "exactly once per object" counting.
     const bool newly_marked_strong = work<T, GENERATION>(p);
     if (newly_marked_strong) {
       _count->do_oop(p);
@@ -124,8 +126,12 @@ private:
   }
 
 public:
-  ShenandoahMarkRefsAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahReferenceProcessor* rp, ShenandoahObjToScanQueue* old_q, ShenandoahObjectCountClosure* count) :
-          ShenandoahMarkRefsSuperClosure(q, rp, old_q), _count(count) {};
+  ShenandoahMarkRefsAndCountClosure(ShenandoahObjToScanQueue* q,
+                                    ShenandoahReferenceProcessor* rp,
+                                    ShenandoahObjToScanQueue* old_q,
+                                    ShenandoahObjectCountClosure* count) :
+          ShenandoahMarkRefsSuperClosure(q, rp, old_q),
+          _count(count) {}
 
   virtual void do_oop(narrowOop* p) { do_oop_work(p); }
   virtual void do_oop(oop* p)       { do_oop_work(p); }

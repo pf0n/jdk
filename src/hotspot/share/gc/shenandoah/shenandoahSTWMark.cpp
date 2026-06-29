@@ -25,7 +25,9 @@
 
 
 #include "code/nmethod.hpp"
+#if INCLUDE_JFR
 #include "gc/shared/objectCountEventSender.hpp"
+#endif // INCLUDE_JFR
 #include "gc/shared/taskTerminator.hpp"
 #include "gc/shared/workerThread.hpp"
 #include "gc/shenandoah/shenandoahClosures.inline.hpp"
