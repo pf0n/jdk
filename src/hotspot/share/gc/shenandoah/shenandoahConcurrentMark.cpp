@@ -133,7 +133,7 @@ void ShenandoahMarkConcurrentRootsTask<GENERATION>::work(uint worker_id) {
 
 #if INCLUDE_JFR
   // Use object counting closure if ObjectCountAfterGC event is enabled.
-  if (ObjectCountEventSender::should_send_event() && !ShenandoahHeap::heap()->mode()->is_generational()) {
+  if (ShenandoahHeap::is_object_count_active()) {
     ShenandoahObjectCountClosure count;
     ShenandoahMarkRefsAndCountClosure<GENERATION> cl(q, _rp, old_q, &count);
     _root_scanner.roots_do(&cl, worker_id);

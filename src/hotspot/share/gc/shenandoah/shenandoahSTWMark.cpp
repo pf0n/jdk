@@ -135,7 +135,7 @@ void ShenandoahSTWMark::mark_roots(uint worker_id) {
     case NON_GEN: {
 #if INCLUDE_JFR
       // Use object counting closure if ObjectCountAfterGC event is enabled.
-      if (ObjectCountEventSender::should_send_event()) {
+      if (ShenandoahHeap::is_object_count_active()) {
         ShenandoahObjectCountClosure count;
         ShenandoahMarkRefsAndCountClosure<NON_GEN> init_mark(queue, rp, nullptr, &count);
         _root_scanner.roots_do(&init_mark, worker_id);

@@ -104,6 +104,7 @@
 #include "utilities/globalDefinitions.hpp"
 #include "utilities/powerOfTwo.hpp"
 #if INCLUDE_JFR
+#include "gc/shared/objectCountEventSender.hpp"
 #include "gc/shenandoah/shenandoahJfrSupport.hpp"
 #endif
 
@@ -2939,3 +2940,9 @@ ShenandoahHeapLocker::ShenandoahHeapLocker(ShenandoahHeapLock* lock, bool allow_
 #endif
   _lock->lock(allow_block_for_safepoint);
 }
+
+#if INCLUDE_JFR
+bool ShenandoahHeap::is_object_count_active() {
+  return ObjectCountEventSender::should_send_event() && !ShenandoahHeap::heap()->mode()->is_generational();
+}
+#endif // INCLUDE_JFR

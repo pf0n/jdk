@@ -41,13 +41,13 @@
 #include "gc/shenandoah/shenandoahPadding.hpp"
 #include "gc/shenandoah/shenandoahSharedVariables.hpp"
 #include "gc/shenandoah/shenandoahUnload.hpp"
-#if INCLUDE_JFR
-#include "memory/heapInspection.hpp"
-#endif // INCLUDE_JFR
 #include "memory/metaspace.hpp"
 #include "services/memoryManager.hpp"
 #include "utilities/globalDefinitions.hpp"
 #include "utilities/stack.hpp"
+#if INCLUDE_JFR
+#include "memory/heapInspection.hpp"
+#endif // INCLUDE_JFR
 
 class ConcurrentGCTimer;
 class ObjectIterateScanRootClosure;
@@ -869,6 +869,10 @@ public:
   static inline uint get_object_age(oop obj);
 
   void log_heap_status(const char *msg) const;
+
+#if INCLUDE_JFR
+  static bool is_object_count_active();
+#endif // INCLUDE_JFR
 
 private:
   void trash_cset_regions();

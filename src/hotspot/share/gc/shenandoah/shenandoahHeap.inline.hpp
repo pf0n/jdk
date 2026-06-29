@@ -47,9 +47,6 @@
 #include "gc/shenandoah/shenandoahMarkingContext.inline.hpp"
 #include "gc/shenandoah/shenandoahThreadLocalData.hpp"
 #include "gc/shenandoah/shenandoahWorkGroup.hpp"
-#if INCLUDE_JFR
-#include "memory/heapInspection.hpp"
-#endif // INCLUDE_JFR
 #include "oops/compressedOops.inline.hpp"
 #include "oops/oop.inline.hpp"
 #include "runtime/atomic.hpp"
@@ -58,6 +55,9 @@
 #include "runtime/prefetch.inline.hpp"
 #include "utilities/copy.hpp"
 #include "utilities/globalDefinitions.hpp"
+#if INCLUDE_JFR
+#include "memory/heapInspection.hpp"
+#endif // INCLUDE_JFR
 
 inline ShenandoahHeap* ShenandoahHeap::heap() {
   return named_heap<ShenandoahHeap>(CollectedHeap::Shenandoah);
@@ -657,23 +657,27 @@ inline ShenandoahMarkingContext* ShenandoahHeap::marking_context() const {
 
 #if INCLUDE_JFR
 inline void ShenandoahHeap::set_cit(KlassInfoTable* cit) {
-  assert(_cit == nullptr || cit == nullptr, "Overwriting an existing histogram");
-  assert(_cit != nullptr || cit != nullptr, "Already cleared");
+  assert(_cit == nullptr || cit == nullptr, "Overwriting an existing histogram.");
+  assert(_cit != nullptr || cit != nullptr, "Already cleared.");
   _cit = cit;
 }
 
 inline KlassInfoTable* ShenandoahHeap::get_cit() {
-  assert(_cit != nullptr, "KlassInfoTable is null");
+  assert(_cit != nullptr, "KlassInfoTable is null.");
   return _cit;
 }
 
 inline ShenandoahKlassInfoTableScope::ShenandoahKlassInfoTableScope(ShenandoahHeap* heap) :
   _heap(heap), _cit(false) {
-  _heap->set_cit(&_cit);
+  if (ShenandoahHeap::is_object_count_active()) {
+    _heap->set_cit(&_cit);
+  }
 }
 
 inline ShenandoahKlassInfoTableScope::~ShenandoahKlassInfoTableScope() {
-  _heap->set_cit(nullptr);
+  if (ShenandoahHeap::is_object_count_active()) {
+    _heap->set_cit(nullptr);
+  }
 }
 #endif // INCLUDE_JFR
 
