@@ -894,6 +894,8 @@ private:
 class ShenandoahKlassInfoTableScope : public StackObj {
   ShenandoahHeap* const _heap;
   KlassInfoTable        _cit;
+  bool                  _active;
+
 public:
   inline ShenandoahKlassInfoTableScope(ShenandoahHeap* heap);
   inline ~ShenandoahKlassInfoTableScope();

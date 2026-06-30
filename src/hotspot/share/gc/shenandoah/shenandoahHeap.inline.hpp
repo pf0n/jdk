@@ -663,19 +663,22 @@ inline void ShenandoahHeap::set_cit(KlassInfoTable* cit) {
 }
 
 inline KlassInfoTable* ShenandoahHeap::get_cit() {
-  assert(_cit != nullptr, "KlassInfoTable is null.");
+  if (!ShenandoahHeap::is_object_count_active()) {
+    return nullptr;
+  }
+  assert(_cit != nullptr, "KlassInfoTable must be non-null when ObjectCountAfterGC is enabled.");
   return _cit;
 }
 
 inline ShenandoahKlassInfoTableScope::ShenandoahKlassInfoTableScope(ShenandoahHeap* heap) :
-  _heap(heap), _cit(false) {
-  if (ShenandoahHeap::is_object_count_active()) {
+  _heap(heap), _cit(false), _active(ShenandoahHeap::is_object_count_active()) {
+  if (_active) {
     _heap->set_cit(&_cit);
   }
 }
 
 inline ShenandoahKlassInfoTableScope::~ShenandoahKlassInfoTableScope() {
-  if (ShenandoahHeap::is_object_count_active()) {
+  if (_active) {
     _heap->set_cit(nullptr);
   }
 }
