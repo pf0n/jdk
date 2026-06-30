@@ -232,6 +232,20 @@ inline void ShenandoahMarkUpdateRefsClosure<GENERATION>::work(T* p) {
   ShenandoahMarkRefsSuperClosure::work<T, GENERATION>(p);
 }
 
+#if INCLUDE_JFR
+template<ShenandoahGenerationType GENERATION>
+template<class T>
+inline void ShenandoahMarkUpdateRefsAndCountClosure<GENERATION>::work(T* p) {
+  // Update the location
+  _heap->non_conc_update_with_forwarded(p);
+
+  // ...then do the usual thing
+  if (ShenandoahMarkRefsSuperClosure::work<T, GENERATION>(p)) {
+    _count->do_oop(p);
+  }
+}
+#endif // INCLUDE_JFR
+
 template<class T>
 inline void ShenandoahNonConcUpdateRefsClosure::work(T* p) {
   _heap->non_conc_update_with_forwarded(p);

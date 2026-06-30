@@ -274,6 +274,37 @@ public:
   }
 };
 
+#if INCLUDE_JFR
+template <ShenandoahGenerationType GENERATION>
+class ShenandoahSATBBufferAndCountClosure : public SATBBufferClosure {
+private:
+  ShenandoahObjToScanQueue* _queue;
+  ShenandoahObjToScanQueue* _old_queue;
+  ShenandoahHeap* const _heap;
+  ShenandoahMarkingContext* const _mark_context;
+  ShenandoahObjectCountClosure* _count;
+public:
+  ShenandoahSATBBufferAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahObjectCountClosure* count) :
+    _queue(q),
+    _old_queue(old_q),
+    _heap(ShenandoahHeap::heap()),
+    _mark_context(_heap->marking_context()),
+    _count(count)
+  {
+  }
+
+  void do_buffer(void **buffer, size_t size) {
+    assert(size == 0 || !_heap->has_forwarded_objects() || _heap->is_concurrent_old_mark_in_progress(), "Forwarded objects are not expected here");
+    for (size_t i = 0; i < size; ++i) {
+      oop *p = (oop *) &buffer[i];
+      if (ShenandoahMark::mark_through_ref<oop, GENERATION>(p, _queue, _old_queue, _mark_context, false)) {
+        _count->do_oop(p);
+      }
+    }
+  }
+};
+#endif // INCLUDE_JFR
+
 template<ShenandoahGenerationType GENERATION>
 bool ShenandoahMark::in_generation(ShenandoahHeap* const heap, oop obj) {
   // Each in-line expansion of in_generation() resolves GENERATION at compile time.

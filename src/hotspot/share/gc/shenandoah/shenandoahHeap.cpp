@@ -2943,6 +2943,6 @@ ShenandoahHeapLocker::ShenandoahHeapLocker(ShenandoahHeapLock* lock, bool allow_
 
 #if INCLUDE_JFR
 bool ShenandoahHeap::is_object_count_active() {
-  return ObjectCountEventSender::should_send_event() && !ShenandoahHeap::heap()->mode()->is_generational();
+  return ObjectCountEventSender::should_send_event() && !heap()->mode()->is_generational();
 }
 #endif // INCLUDE_JFR

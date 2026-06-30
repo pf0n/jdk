@@ -113,7 +113,7 @@ private:
 
   template <class T, ShenandoahGenerationType GENERATION, bool CANCELLABLE, bool STRING_DEDUP>
   NOINLINE // Main hot loop, start inlining from here
-  void mark_loop_work(T* cl, ShenandoahLiveData* live_data, uint worker_id, TaskTerminator *t, StringDedup::Requests* const req);
+  void mark_loop_work(T* cl, SATBBufferClosure* drain_satb, ShenandoahLiveData* live_data, uint worker_id, TaskTerminator *t, StringDedup::Requests* const req);
 
 protected:
   template<bool CANCELLABLE, bool STRING_DEDUP>

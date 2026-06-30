@@ -25,23 +25,20 @@
 
 
 #include "code/nmethod.hpp"
-#if INCLUDE_JFR
-#include "gc/shared/objectCountEventSender.hpp"
-#endif // INCLUDE_JFR
 #include "gc/shared/taskTerminator.hpp"
 #include "gc/shared/workerThread.hpp"
 #include "gc/shenandoah/shenandoahClosures.inline.hpp"
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahGenerationType.hpp"
 #include "gc/shenandoah/shenandoahMark.inline.hpp"
-#if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
-#endif // INCLUDE_JFR
 #include "gc/shenandoah/shenandoahReferenceProcessor.hpp"
 #include "gc/shenandoah/shenandoahRootProcessor.inline.hpp"
 #include "gc/shenandoah/shenandoahSTWMark.hpp"
 #include "gc/shenandoah/shenandoahVerifier.hpp"
 #include "runtime/threads.hpp"
+#if INCLUDE_JFR
+#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 
 class ShenandoahSTWMarkTask : public WorkerTask {
 private:

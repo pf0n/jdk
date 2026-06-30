@@ -26,12 +26,12 @@
 
 #include "gc/shared/stringdedup/stringDedup.hpp"
 #include "gc/shenandoah/shenandoahGenerationType.hpp"
-#if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
-#endif // INCLUDE_JFR
 #include "gc/shenandoah/shenandoahTaskqueue.hpp"
 #include "memory/iterator.hpp"
 #include "runtime/javaThread.hpp"
+#if INCLUDE_JFR
+#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 
 class BarrierSetNMethod;
 class ShenandoahBarrierSet;
@@ -239,6 +239,25 @@ public:
   virtual void do_oop(narrowOop* p) { work(p); }
   virtual void do_oop(oop* p)       { work(p); }
 };
+
+#if INCLUDE_JFR
+template <ShenandoahGenerationType GENERATION>
+class ShenandoahMarkUpdateRefsAndCountClosure : public ShenandoahMarkRefsSuperClosure {
+private:
+  template <class T>
+  inline void work(T* p);
+  ShenandoahObjectCountClosure* _count;
+
+public:
+  ShenandoahMarkUpdateRefsAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahReferenceProcessor* rp, ShenandoahObjToScanQueue* old_q, ShenandoahObjectCountClosure* count) :
+                                          ShenandoahMarkRefsSuperClosure(q, rp, old_q),
+                                          _count(count) {}
+
+  virtual void do_oop(narrowOop* p) { work(p); }
+  virtual void do_oop(oop* p)       { work(p); }
+
+};
+#endif // INCLUDE_JFR
 
 class ShenandoahUpdateRefsSuperClosure : public ShenandoahSuperClosure {};
 

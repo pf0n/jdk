@@ -24,7 +24,6 @@
  */
 
 
-#include "gc/shared/objectCountEventSender.hpp"
 #include "gc/shared/satbMarkQueue.hpp"
 #include "gc/shared/taskTerminator.hpp"
 #include "gc/shenandoah/shenandoahBarrierSet.inline.hpp"
@@ -33,9 +32,6 @@
 #include "gc/shenandoah/shenandoahGeneration.hpp"
 #include "gc/shenandoah/shenandoahHeap.inline.hpp"
 #include "gc/shenandoah/shenandoahMark.inline.hpp"
-#if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
-#endif // INCLUDE_JFR
 #include "gc/shenandoah/shenandoahPhaseTimings.hpp"
 #include "gc/shenandoah/shenandoahReferenceProcessor.hpp"
 #include "gc/shenandoah/shenandoahRootProcessor.inline.hpp"
@@ -46,6 +42,9 @@
 #include "memory/resourceArea.hpp"
 #include "runtime/continuation.hpp"
 #include "runtime/threads.hpp"
+#if INCLUDE_JFR
+#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 
 template <ShenandoahGenerationType GENERATION>
 class ShenandoahConcurrentMarkingTask : public WorkerTask {

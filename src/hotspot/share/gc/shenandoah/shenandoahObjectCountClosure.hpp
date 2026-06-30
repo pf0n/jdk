@@ -31,8 +31,10 @@
 #include "oops/access.hpp"
 #include "oops/compressedOops.inline.hpp"
 #include "oops/oop.inline.hpp"
-#include "runtime/mutex.hpp"
 
+// Thread-local closure that records per-Klass instance counts and sizes during
+// marking, accumulating into a thread-local KlassInfoTable. On destruction the
+// local table is merged into the heap's KlassInfoTable.
 class ShenandoahObjectCountClosure {
 private:
   KlassInfoTable _cit;
@@ -54,7 +56,6 @@ public:
 
   // Record the object's instance in the KlassInfoTable
   inline void do_oop(narrowOop* o) { do_oop_work(o); }
-  // Record the object's instance in the KlassInfoTable
   inline void do_oop(oop* o) { do_oop_work(o); }
 
   ~ShenandoahObjectCountClosure() {

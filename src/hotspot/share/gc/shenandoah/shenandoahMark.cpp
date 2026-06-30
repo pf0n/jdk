@@ -24,7 +24,6 @@
  */
 
 
-#include "gc/shared/objectCountEventSender.hpp"
 #include "gc/shenandoah/shenandoahBarrierSet.hpp"
 #include "gc/shenandoah/shenandoahClosures.inline.hpp"
 #include "gc/shenandoah/shenandoahGeneration.hpp"
@@ -33,6 +32,9 @@
 #include "gc/shenandoah/shenandoahTaskqueue.inline.hpp"
 #include "gc/shenandoah/shenandoahUtils.hpp"
 #include "gc/shenandoah/shenandoahVerifier.hpp"
+#if INCLUDE_JFR
+#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#endif // INCLUDE_JFR
 
 void ShenandoahMark::start_mark() {
   if (!CodeCache::is_gc_marking_cycle_active()) {
@@ -63,27 +65,36 @@ void ShenandoahMark::mark_loop_prework(uint w, TaskTerminator *t, StringDedup::R
   ShenandoahHeap* const heap = ShenandoahHeap::heap();
   ShenandoahLiveData* ld = heap->get_liveness_cache(w);
 
+#if INCLUDE_JFR
+  // Use object counting closure if ObjectCountAfterGC event is enabled.
+  if (ShenandoahHeap::is_object_count_active()) {
+    ShenandoahObjectCountClosure count;
+    ShenandoahSATBBufferAndCountClosure<GENERATION> drain_satb_and_count(q, old_q, &count);
+    if (update_refs) {
+      using Closure = ShenandoahMarkUpdateRefsAndCountClosure<GENERATION>;
+      Closure cl(q, rp, old_q, &count);
+      mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, &drain_satb_and_count, ld, w, t, req);
+    } else {
+      using Closure = ShenandoahMarkRefsAndCountClosure<GENERATION>;
+      Closure cl(q, rp, old_q, &count);
+      mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, &drain_satb_and_count, ld, w, t, req);
+    }
+    heap->flush_liveness_cache(w);
+    return;
+  }
+#endif // INCLUDE_JFR
+
+  ShenandoahSATBBufferClosure<GENERATION> drain_satb(q, old_q);
   // TODO: We can clean up this if we figure out how to do templated oop closures that
   // play nice with specialized_oop_iterators.
   if (update_refs) {
     using Closure = ShenandoahMarkUpdateRefsClosure<GENERATION>;
     Closure cl(q, rp, old_q);
-    mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, ld, w, t, req);
+    mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, &drain_satb, ld, w, t, req);
   } else {
-#if INCLUDE_JFR
-    // Use object counting closure if ObjectCountAfterGC event is enabled.
-    if (ShenandoahHeap::is_object_count_active()) {
-      ShenandoahObjectCountClosure count;
-      using Closure = ShenandoahMarkRefsAndCountClosure<GENERATION>;
-      Closure cl(q, rp, old_q, &count);
-      mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, ld, w, t, req);
-    } else
-#endif // INCLUDE_JFR
-    {
-      using Closure = ShenandoahMarkRefsClosure<GENERATION>;
-      Closure cl(q, rp, old_q);
-      mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, ld, w, t, req);
-    }
+    using Closure = ShenandoahMarkRefsClosure<GENERATION>;
+    Closure cl(q, rp, old_q);
+    mark_loop_work<Closure, GENERATION, CANCELLABLE, STRING_DEDUP>(&cl, &drain_satb, ld, w, t, req);
   }
 
   heap->flush_liveness_cache(w);
@@ -132,7 +143,7 @@ void ShenandoahMark::mark_loop(uint worker_id, TaskTerminator* terminator, Shena
 }
 
 template <class T, ShenandoahGenerationType GENERATION, bool CANCELLABLE, bool STRING_DEDUP>
-void ShenandoahMark::mark_loop_work(T* cl, ShenandoahLiveData* live_data, uint worker_id, TaskTerminator *terminator, StringDedup::Requests* const req) {
+void ShenandoahMark::mark_loop_work(T* cl, SATBBufferClosure* drain_satb, ShenandoahLiveData* live_data, uint worker_id, TaskTerminator *terminator, StringDedup::Requests* const req) {
   uintx stride = ShenandoahMarkLoopStride;
 
   ShenandoahHeap* heap = ShenandoahHeap::heap();
@@ -170,9 +181,7 @@ void ShenandoahMark::mark_loop_work(T* cl, ShenandoahLiveData* live_data, uint w
     }
   }
   q = get_queue(worker_id);
-  ShenandoahObjToScanQueue* old_q = get_old_queue(worker_id);
 
-  ShenandoahSATBBufferClosure<GENERATION> drain_satb(q, old_q);
   SATBMarkQueueSet& satb_mq_set = ShenandoahBarrierSet::satb_mark_queue_set();
 
   /*
@@ -183,7 +192,7 @@ void ShenandoahMark::mark_loop_work(T* cl, ShenandoahLiveData* live_data, uint w
       return;
     }
     while (satb_mq_set.completed_buffers_num() > 0) {
-      satb_mq_set.apply_closure_to_completed_buffer(&drain_satb);
+      satb_mq_set.apply_closure_to_completed_buffer(drain_satb);
     }
 
     uint work = 0;
