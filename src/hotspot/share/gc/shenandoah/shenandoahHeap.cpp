@@ -2942,7 +2942,11 @@ ShenandoahHeapLocker::ShenandoahHeapLocker(ShenandoahHeapLock* lock, bool allow_
 }
 
 #if INCLUDE_JFR
+bool ShenandoahHeap::should_enable_object_count() {
+  return ObjectCountEventSender::should_send_event() && !ShenandoahHeap::heap()->mode()->is_generational();
+}
+
 bool ShenandoahHeap::is_object_count_active() {
-  return ObjectCountEventSender::should_send_event() && !heap()->mode()->is_generational();
+  return ShenandoahHeap::heap()->get_cit() != nullptr;
 }
 #endif // INCLUDE_JFR

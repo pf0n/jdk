@@ -871,6 +871,7 @@ public:
   void log_heap_status(const char *msg) const;
 
 #if INCLUDE_JFR
+  static bool should_enable_object_count();
   static bool is_object_count_active();
 #endif // INCLUDE_JFR
 
