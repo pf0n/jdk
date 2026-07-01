@@ -30,7 +30,7 @@
 #include "memory/iterator.hpp"
 #include "runtime/javaThread.hpp"
 #if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#include "gc/shenandoah/shenandoahKlassInfoRecorder.hpp"
 #endif // INCLUDE_JFR
 
 class BarrierSetNMethod;
@@ -74,10 +74,10 @@ private:
   bool _weak;
 
 protected:
-  // Returns true if this call was the first to strongly mark the object.
-  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
+  // Returns the object this call newly strong-marked, else nullptr (null, weak,
+  // or already marked). Used for per-object work such as ObjectCountAfterGC counting.
   template <class T, ShenandoahGenerationType GENERATION>
-  bool work(T *p);
+  oop work(T *p);
 
 public:
   inline ShenandoahMarkRefsSuperClosure(ShenandoahObjToScanQueue* q, ShenandoahReferenceProcessor* rp, ShenandoahObjToScanQueue* old_q);
@@ -118,14 +118,12 @@ public:
 template <ShenandoahGenerationType GENERATION>
 class ShenandoahMarkRefsAndCountClosure : public ShenandoahMarkRefsSuperClosure {
 private:
-  ShenandoahObjectCountClosure* _count;
+  ShenandoahKlassInfoRecorder* _count;
   template <class T>
   inline void do_oop_work(T* p) {
-    // Returns true only when this call strongly marks an object.
-    // That gives us "exactly once per object" counting.
-    const bool newly_marked_strong = work<T, GENERATION>(p);
-    if (newly_marked_strong) {
-      _count->do_oop(p);
+    oop obj = work<T, GENERATION>(p);
+    if (obj) {
+      _count->record(obj);
     }
   }
 
@@ -133,7 +131,7 @@ public:
   ShenandoahMarkRefsAndCountClosure(ShenandoahObjToScanQueue* q,
                                     ShenandoahReferenceProcessor* rp,
                                     ShenandoahObjToScanQueue* old_q,
-                                    ShenandoahObjectCountClosure* count) :
+                                    ShenandoahKlassInfoRecorder* count) :
           ShenandoahMarkRefsSuperClosure(q, rp, old_q),
           _count(count) {}
 
@@ -246,16 +244,15 @@ class ShenandoahMarkUpdateRefsAndCountClosure : public ShenandoahMarkRefsSuperCl
 private:
   template <class T>
   inline void work(T* p);
-  ShenandoahObjectCountClosure* _count;
+  ShenandoahKlassInfoRecorder* _count;
 
 public:
-  ShenandoahMarkUpdateRefsAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahReferenceProcessor* rp, ShenandoahObjToScanQueue* old_q, ShenandoahObjectCountClosure* count) :
+  ShenandoahMarkUpdateRefsAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahReferenceProcessor* rp, ShenandoahObjToScanQueue* old_q, ShenandoahKlassInfoRecorder* count) :
                                           ShenandoahMarkRefsSuperClosure(q, rp, old_q),
                                           _count(count) {}
 
   virtual void do_oop(narrowOop* p) { work(p); }
   virtual void do_oop(oop* p)       { work(p); }
-
 };
 #endif // INCLUDE_JFR
 

@@ -22,46 +22,37 @@
  *
  */
 
-#ifndef SHARE_GC_SHENANDOAH_SHENANDOAHOBJECTCOUNTCLOSURE_HPP
-#define SHARE_GC_SHENANDOAH_SHENANDOAHOBJECTCOUNTCLOSURE_HPP
+#ifndef SHARE_GC_SHENANDOAH_SHENANDOAHKLASSINFORECORDER_HPP
+#define SHARE_GC_SHENANDOAH_SHENANDOAHKLASSINFORECORDER_HPP
 
 #include "utilities/macros.hpp"
 #if INCLUDE_JFR
 #include "memory/heapInspection.hpp"
-#include "oops/access.hpp"
-#include "oops/compressedOops.inline.hpp"
-#include "oops/oop.inline.hpp"
 
-// Thread-local closure that records per-Klass instance counts and sizes during
-// marking, accumulating into a thread-local KlassInfoTable. On destruction the
-// local table is merged into the heap's KlassInfoTable.
-class ShenandoahObjectCountClosure {
+// Thread-local recorder that accumulates per-Klass instance counts and sizes
+// during marking into a thread-local KlassInfoTable. The marking closures feed
+// it via record(). On desrecution the local table is merged into the heap's
+// KlassInfotable.
+class ShenandoahKlassInfoRecorder {
 private:
   KlassInfoTable _cit;
-
-  template <class T>
-  inline void do_oop_work(T* p) {
-    T o = RawAccess<>::oop_load(p);
-    if (!CompressedOops::is_null(o)) {
-      oop obj = CompressedOops::decode_not_null(o);
-      _cit.record_instance(obj);
-    }
-  }
 
   // Merges the heap's KlassInfoTable with the thread's KlassInfoTable.
   void merge_table();
 
 public:
-  ShenandoahObjectCountClosure() : _cit(false) {}
+  ShenandoahKlassInfoRecorder() : _cit(false) {}
 
   // Record the object's instance in the KlassInfoTable
-  inline void do_oop(narrowOop* o) { do_oop_work(o); }
-  inline void do_oop(oop* o) { do_oop_work(o); }
+  inline void record(oop obj) {
+    assert(obj != nullptr, "Cannot record nullptr in KlassInfoTable");
+    _cit.record_instance(obj);
+  }
 
-  ~ShenandoahObjectCountClosure() {
+  ~ShenandoahKlassInfoRecorder() {
     merge_table();
   }
 };
 #endif // INCLUDE_JFR
 
-#endif // SHARE_GC_SHENANDOAH_SHENANDOAHOBJECTCOUNTCLOSURE_HPP
+#endif // SHARE_GC_SHENANDOAH_SHENANDOAHKLASSINFORECORDER_HPP

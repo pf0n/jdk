@@ -33,7 +33,7 @@
 #include "gc/shenandoah/shenandoahUtils.hpp"
 #include "gc/shenandoah/shenandoahVerifier.hpp"
 #if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#include "gc/shenandoah/shenandoahKlassInfoRecorder.hpp"
 #endif // INCLUDE_JFR
 
 void ShenandoahMark::start_mark() {
@@ -68,7 +68,7 @@ void ShenandoahMark::mark_loop_prework(uint w, TaskTerminator *t, StringDedup::R
 #if INCLUDE_JFR
   // Use object counting closure if ObjectCountAfterGC event is enabled.
   if (ShenandoahHeap::is_object_count_active()) {
-    ShenandoahObjectCountClosure count;
+    ShenandoahKlassInfoRecorder count;
     ShenandoahSATBBufferAndCountClosure<GENERATION> drain_satb_and_count(q, old_q, &count);
     if (update_refs) {
       using Closure = ShenandoahMarkUpdateRefsAndCountClosure<GENERATION>;

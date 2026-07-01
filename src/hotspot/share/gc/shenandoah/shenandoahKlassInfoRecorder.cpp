@@ -25,10 +25,10 @@
 #include "utilities/macros.hpp"
 #if INCLUDE_JFR
 #include "gc/shenandoah/shenandoahHeap.inline.hpp"
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#include "gc/shenandoah/shenandoahKlassInfoRecorder.hpp"
 #include "runtime/mutexLocker.hpp"
 
-void ShenandoahObjectCountClosure::merge_table() {
+void ShenandoahKlassInfoRecorder::merge_table() {
   KlassInfoTable* heap_cit = ShenandoahHeap::heap()->get_cit();
   assert(heap_cit != nullptr, "Heap KlassInfoTable is not initialized");
 

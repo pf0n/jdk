@@ -282,9 +282,9 @@ private:
   ShenandoahObjToScanQueue* _old_queue;
   ShenandoahHeap* const _heap;
   ShenandoahMarkingContext* const _mark_context;
-  ShenandoahObjectCountClosure* _count;
+  ShenandoahKlassInfoRecorder* _count;
 public:
-  ShenandoahSATBBufferAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahObjectCountClosure* count) :
+  ShenandoahSATBBufferAndCountClosure(ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahKlassInfoRecorder* count) :
     _queue(q),
     _old_queue(old_q),
     _heap(ShenandoahHeap::heap()),
@@ -297,8 +297,9 @@ public:
     assert(size == 0 || !_heap->has_forwarded_objects() || _heap->is_concurrent_old_mark_in_progress(), "Forwarded objects are not expected here");
     for (size_t i = 0; i < size; ++i) {
       oop *p = (oop *) &buffer[i];
-      if (ShenandoahMark::mark_through_ref<oop, GENERATION>(p, _queue, _old_queue, _mark_context, false)) {
-        _count->do_oop(p);
+      oop obj = ShenandoahMark::mark_through_ref<oop, GENERATION>(p, _queue, _old_queue, _mark_context, false);
+      if (obj) {
+        _count->record(obj);
       }
     }
   }
@@ -322,7 +323,7 @@ bool ShenandoahMark::in_generation(ShenandoahHeap* const heap, oop obj) {
 }
 
 template<class T, ShenandoahGenerationType GENERATION>
-bool ShenandoahMark::mark_through_ref(T *p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak) {
+oop ShenandoahMark::mark_through_ref(T *p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak) {
   // Note: This is a very hot code path, so the code should be conditional on GENERATION template
   // parameter where possible, in order to generate the most efficient code.
 
@@ -355,24 +356,27 @@ bool ShenandoahMark::mark_through_ref(T *p, ShenandoahObjToScanQueue* q, Shenand
         heap->old_generation()->mark_card_as_dirty(p);
       }
     }
+    if (strongly_marked) {
+      return obj;
+    }
   }
-  return strongly_marked;
+  return nullptr;
 }
 
 template<>
 ALWAYSINLINE
-bool ShenandoahMark::mark_through_ref<oop, ShenandoahGenerationType::NON_GEN>(oop *p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak) {
+oop ShenandoahMark::mark_through_ref<oop, ShenandoahGenerationType::NON_GEN>(oop *p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak) {
   return mark_non_generational_ref(p, q, mark_context, weak);
 }
 
 template<>
 ALWAYSINLINE
-bool ShenandoahMark::mark_through_ref<narrowOop, ShenandoahGenerationType::NON_GEN>(narrowOop *p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak) {
+oop ShenandoahMark::mark_through_ref<narrowOop, ShenandoahGenerationType::NON_GEN>(narrowOop *p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak) {
   return mark_non_generational_ref(p, q, mark_context, weak);
 }
 
 template<class T>
-bool ShenandoahMark::mark_non_generational_ref(T* p, ShenandoahObjToScanQueue* q,
+oop ShenandoahMark::mark_non_generational_ref(T* p, ShenandoahObjToScanQueue* q,
                                                       ShenandoahMarkingContext* const mark_context, bool weak) {
   oop o = RawAccess<>::oop_load(p);
   bool strongly_marked = false;
@@ -385,8 +389,12 @@ bool ShenandoahMark::mark_non_generational_ref(T* p, ShenandoahObjToScanQueue* q
     strongly_marked = mark_ref(q, mark_context, weak, obj);
 
     shenandoah_assert_marked(p, obj);
+
+    if (strongly_marked) {
+      return obj;
+    }
   }
-  return strongly_marked;
+  return nullptr;
 }
 
 inline bool ShenandoahMark::mark_ref(ShenandoahObjToScanQueue* q,

@@ -43,7 +43,7 @@
 #include "runtime/continuation.hpp"
 #include "runtime/threads.hpp"
 #if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#include "gc/shenandoah/shenandoahKlassInfoRecorder.hpp"
 #endif // INCLUDE_JFR
 
 template <ShenandoahGenerationType GENERATION>
@@ -133,7 +133,7 @@ void ShenandoahMarkConcurrentRootsTask<GENERATION>::work(uint worker_id) {
 #if INCLUDE_JFR
   // Use object counting closure if ObjectCountAfterGC event is enabled.
   if (ShenandoahHeap::is_object_count_active()) {
-    ShenandoahObjectCountClosure count;
+    ShenandoahKlassInfoRecorder count;
     ShenandoahMarkRefsAndCountClosure<GENERATION> cl(q, _rp, old_q, &count);
     _root_scanner.roots_do(&cl, worker_id);
     return;

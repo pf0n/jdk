@@ -35,6 +35,7 @@
 #include "gc/shenandoah/shenandoahTaskqueue.hpp"
 
 class ShenandoahMarkingContext;
+class SATBBufferClosure;
 
 // Base class for mark
 // Mark class does not maintain states. Instead, mark states are
@@ -50,11 +51,11 @@ protected:
   ShenandoahMark(ShenandoahGeneration* generation);
 
 public:
-  // Returns true if this call was the first to strongly mark the object.
-  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
+  // Returns the object this call newly strong-marked, else nullptr (null, weak,
+  // or already marked). Used for per-object work such as ObjectCountAfterGC counting.
   template<class T, ShenandoahGenerationType GENERATION>
   ALWAYSINLINE
-  static bool mark_through_ref(T* p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak);
+  static oop mark_through_ref(T* p, ShenandoahObjToScanQueue* q, ShenandoahObjToScanQueue* old_q, ShenandoahMarkingContext* const mark_context, bool weak);
 
   // Loom support
   void start_mark();
@@ -94,11 +95,11 @@ private:
   ALWAYSINLINE
   static bool in_generation(ShenandoahHeap* const heap, oop obj);
 
-  // Returns true if this call was the first to strongly mark the object.
-  // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).
+  // Returns the object this call newly strong-marked, else nullptr (null, weak,
+  // or already marked). Used for per-object work such as ObjectCountAfterGC counting.
   template <class T>
   ALWAYSINLINE
-  static bool mark_non_generational_ref(T *p, ShenandoahObjToScanQueue* q, ShenandoahMarkingContext* const mark_context, bool weak);
+  static oop mark_non_generational_ref(T *p, ShenandoahObjToScanQueue* q, ShenandoahMarkingContext* const mark_context, bool weak);
 
   // Returns true if this call was the first to strongly mark the object.
   // Callers can use this for per-object work (e.g., ObjectCountAfterGC counting).

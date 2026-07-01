@@ -37,7 +37,7 @@
 #include "gc/shenandoah/shenandoahVerifier.hpp"
 #include "runtime/threads.hpp"
 #if INCLUDE_JFR
-#include "gc/shenandoah/shenandoahObjectCountClosure.hpp"
+#include "gc/shenandoah/shenandoahKlassInfoRecorder.hpp"
 #endif // INCLUDE_JFR
 
 class ShenandoahSTWMarkTask : public WorkerTask {
@@ -133,7 +133,7 @@ void ShenandoahSTWMark::mark_roots(uint worker_id) {
 #if INCLUDE_JFR
       // Use object counting closure if ObjectCountAfterGC event is enabled.
       if (ShenandoahHeap::is_object_count_active()) {
-        ShenandoahObjectCountClosure count;
+        ShenandoahKlassInfoRecorder count;
         ShenandoahMarkRefsAndCountClosure<NON_GEN> init_mark(queue, rp, nullptr, &count);
         _root_scanner.roots_do(&init_mark, worker_id);
       } else

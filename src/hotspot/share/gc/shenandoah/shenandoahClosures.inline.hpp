@@ -78,7 +78,7 @@ ShenandoahMarkRefsSuperClosure::ShenandoahMarkRefsSuperClosure(ShenandoahObjToSc
 
 template<class T, ShenandoahGenerationType GENERATION>
 ALWAYSINLINE
-bool ShenandoahMarkRefsSuperClosure::work(T* p) {
+oop ShenandoahMarkRefsSuperClosure::work(T* p) {
   return ShenandoahMark::mark_through_ref<T, GENERATION>(p, _queue, _old_queue, _mark_context, _weak);
 }
 
@@ -240,8 +240,9 @@ inline void ShenandoahMarkUpdateRefsAndCountClosure<GENERATION>::work(T* p) {
   _heap->non_conc_update_with_forwarded(p);
 
   // ...then do the usual thing
-  if (ShenandoahMarkRefsSuperClosure::work<T, GENERATION>(p)) {
-    _count->do_oop(p);
+  oop obj = ShenandoahMarkRefsSuperClosure::work<T, GENERATION>(p);
+  if (obj) {
+    _count->record(obj);
   }
 }
 #endif // INCLUDE_JFR
