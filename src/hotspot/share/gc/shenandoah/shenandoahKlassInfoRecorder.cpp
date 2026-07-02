@@ -34,6 +34,9 @@ void ShenandoahKlassInfoRecorder::merge_table() {
 
   MutexLocker x(ObjectCountMerge_lock, Mutex::_no_safepoint_check_flag);
   bool success = heap_cit->merge(&_cit);
-  assert(success, "Failed to merge thread-local table");
+  if (!success) {
+    log_warning(gc, jfr)("ObjectCountAfterGC: could not merge all of the thread-local KlassInfoTable entries."
+                         " Emitted object counts may be incomplete.");
+  }
 }
 #endif // INCLUDE_JFR

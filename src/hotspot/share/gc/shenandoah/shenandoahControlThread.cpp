@@ -165,7 +165,13 @@ void ShenandoahControlThread::run_service() {
           ShouldNotReachHere();
       }
       heap->print_after_gc();
-      JFR_ONLY(heap->tracer()->report_object_count_after_gc(heap->get_cit()));
+
+#if INCLUDE_JFR
+    // Only emit the ObjectCountAfterGC event if marking was completed.
+    if (ShenandoahHeap::is_object_count_active() && heap->is_cit_complete()) {
+      heap->tracer()->report_object_count_after_gc(heap->get_cit());
+    }
+#endif // INCLUDE_JFR
 
       // If this was the requested GC cycle, notify waiters about it
       if (is_gc_requested) {

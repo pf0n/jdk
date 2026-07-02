@@ -120,7 +120,8 @@ class ShenandoahMarkRefsAndCountClosure : public ShenandoahMarkRefsSuperClosure 
 private:
   ShenandoahKlassInfoRecorder* _count;
   template <class T>
-  inline void do_oop_work(T* p) {
+  ALWAYSINLINE
+  void do_oop_work(T* p) {
     oop obj = work<T, GENERATION>(p);
     if (obj) {
       _count->record(obj);
@@ -135,8 +136,11 @@ public:
           ShenandoahMarkRefsSuperClosure(q, rp, old_q),
           _count(count) {}
 
-  virtual void do_oop(narrowOop* p) { do_oop_work(p); }
-  virtual void do_oop(oop* p)       { do_oop_work(p); }
+  ALWAYSINLINE
+  void do_oop(narrowOop* p) override { do_oop_work(p); }
+
+  ALWAYSINLINE
+  void do_oop(oop* p) override { do_oop_work(p); }
 };
 #endif // INCLUDE_JFR
 
@@ -251,8 +255,8 @@ public:
                                           ShenandoahMarkRefsSuperClosure(q, rp, old_q),
                                           _count(count) {}
 
-  virtual void do_oop(narrowOop* p) { work(p); }
-  virtual void do_oop(oop* p)       { work(p); }
+  void do_oop(narrowOop* p) override { work(p); }
+  void do_oop(oop* p) override { work(p); }
 };
 #endif // INCLUDE_JFR
 

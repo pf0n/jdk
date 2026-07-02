@@ -670,6 +670,7 @@ inline ShenandoahKlassInfoTableScope::ShenandoahKlassInfoTableScope(ShenandoahHe
   _heap(heap), _cit(false), _active(ShenandoahHeap::should_enable_object_count()) {
   if (_active) {
     _heap->set_cit(&_cit);
+    heap->set_cit_complete(false);
   }
 }
 
@@ -678,6 +679,11 @@ inline ShenandoahKlassInfoTableScope::~ShenandoahKlassInfoTableScope() {
     _heap->set_cit(nullptr);
   }
 }
+
+inline void ShenandoahHeap::set_cit_complete(bool complete) { _cit_complete = complete; }
+
+
+inline bool ShenandoahHeap::is_cit_complete()         const { return _cit_complete; }
 #endif // INCLUDE_JFR
 
 #endif // SHARE_GC_SHENANDOAH_SHENANDOAHHEAP_INLINE_HPP

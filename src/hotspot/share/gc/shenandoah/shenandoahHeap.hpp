@@ -231,8 +231,11 @@ private:
   Atomic<size_t> _committed;
   shenandoah_padding(1);
 
+#if INCLUDE_JFR
   // Used for JFR object count event support.
-  JFR_ONLY(KlassInfoTable* _cit);
+  KlassInfoTable* _cit;
+  bool _cit_complete;
+#endif // INCLUDE_JFR
 
   ShenandoahAllocationRate _alloc_rate;
   ShenandoahDecayAllocRate _alloc_rate_decay;
@@ -255,6 +258,8 @@ public:
   // Setter & accessor for class histogram
   inline void set_cit(KlassInfoTable* cit);
   inline KlassInfoTable* get_cit();
+  inline void set_cit_complete(bool complete);
+  inline bool is_cit_complete() const;
 #endif // INCLUDE_JFR
 
   ShenandoahAllocationRate& alloc_rate() {

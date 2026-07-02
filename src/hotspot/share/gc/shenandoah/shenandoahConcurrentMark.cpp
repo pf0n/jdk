@@ -250,6 +250,11 @@ void ShenandoahConcurrentMark::finish_mark() {
   _generation->set_concurrent_mark_in_progress(false);
   _generation->set_mark_complete();
 
+#if INCLUDE_JFR
+  if (ShenandoahHeap::is_object_count_active()) {
+    ShenandoahHeap::heap()->set_cit_complete(true);
+  }
+#endif // INCLUDE_JFR
   end_mark();
 }
 
