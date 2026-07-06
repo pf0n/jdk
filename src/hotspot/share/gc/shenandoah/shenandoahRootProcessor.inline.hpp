@@ -161,6 +161,12 @@ public:
         return;
       }
 
+#if INCLUDE_JFR
+      if (ShenandoahHeap::is_object_count_active()) {
+        heap->get_cit()->record_instance(cast_to_oop(invisible_root));
+      }
+#endif /// INCLUDE_JFR
+
       // Update region liveness data
       ShenandoahHeapRegion* region = heap->heap_region_containing(invisible_root);
       if (region->is_regular_or_regular_pinned()) {
