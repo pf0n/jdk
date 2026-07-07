@@ -45,6 +45,9 @@ public:
 
   // Record the object's instance in the KlassInfoTable
   inline void record(oop obj) {
+    if (_cit.allocation_failed()) {
+      return;
+    }
     assert(obj != nullptr, "Cannot record nullptr in KlassInfoTable");
     _cit.record_instance(obj);
   }
